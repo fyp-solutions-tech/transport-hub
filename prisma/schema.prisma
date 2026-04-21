@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  DRIVER
+  ADMIN
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  passengerRides Ride[]    @relation("PassengerRides")
+  driverRides    Ride[]    @relation("DriverRides")
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+enum RideStatus {
+  PENDING
+  SEARCHING
+  ACCEPTED
+  ARRIVING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Ride {
+  id              String     @id @default(cuid())
+  passengerId     String
+  passenger       User       @relation("PassengerRides", fields: [passengerId], references: [id])
+  driverId        String?
+  driver          User?      @relation("DriverRides", fields: [driverId], references: [id])
+  
+  pickupLat       Float
+  pickupLng       Float
+  pickupAddress   String
+  
+  dropoffLat      Float
+  dropoffLng      Float
+  dropoffAddress  String
+  
+  distanceKm      Float?
+  durationMin     Float?
+  fare            Float?
+  status          RideStatus @default(PENDING)
+  
+  vehicleType     String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@map("rides")
+}

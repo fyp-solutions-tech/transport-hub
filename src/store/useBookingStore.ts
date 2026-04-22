@@ -20,6 +20,8 @@ export interface VehicleDef {
   eta: string;
 }
 
+export type PaymentMethod = 'cash' | 'loan' | 'card';
+
 export interface BookingState {
   // Locations
   pickup: Location | null;
@@ -33,12 +35,18 @@ export interface BookingState {
   // Vehicle
   selectedVehicle: VehicleCategory | null;
 
+  // Payment
+  paymentMethod: PaymentMethod;
+  loanApplied: boolean;
+
   // Actions
   setPickup: (loc: Location | null) => void;
   setDropoff: (loc: Location | null) => void;
   setLiveLocation: (loc: Location | null) => void;
   setSearchParams: (distance: number, duration: number) => void;
   setSelectedVehicle: (v: VehicleCategory | null) => void;
+  setPaymentMethod: (m: PaymentMethod) => void;
+  setLoanApplied: (v: boolean) => void;
   resetBooking: () => void;
 }
 
@@ -111,12 +119,16 @@ export const useBookingStore = create<BookingState>((set) => ({
   distance: null,
   duration: null,
   selectedVehicle: null,
+  paymentMethod: 'cash',
+  loanApplied: false,
 
   setPickup: (loc) => set({ pickup: loc }),
   setDropoff: (loc) => set({ dropoff: loc }),
   setLiveLocation: (loc) => set({ liveLocation: loc }),
   setSearchParams: (distance, duration) => set({ distance, duration }),
   setSelectedVehicle: (v) => set({ selectedVehicle: v }),
+  setPaymentMethod: (m) => set({ paymentMethod: m }),
+  setLoanApplied: (v) => set({ loanApplied: v }),
   resetBooking: () =>
     set({
       pickup: null,
@@ -124,5 +136,7 @@ export const useBookingStore = create<BookingState>((set) => ({
       distance: null,
       duration: null,
       selectedVehicle: null,
+      paymentMethod: 'cash',
+      loanApplied: false,
     }),
 }));

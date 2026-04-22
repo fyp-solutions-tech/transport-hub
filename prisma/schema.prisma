@@ -114,6 +114,9 @@ model Ride {
   status          RideStatus @default(PENDING)
   
   vehicleType     String?
+  rating          Float?
+  paymentMethod   String?    @default("cash")
+  loanAmount      Float?     @default(0)
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 

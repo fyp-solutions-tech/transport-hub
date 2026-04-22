@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import {
   MdArrowBack,
@@ -13,6 +13,7 @@ import {
   MdAttachMoney,
   MdClose,
   MdCheckCircle,
+  MdDashboard,
 } from "react-icons/md";
 import { toast } from "sonner";
 import {
@@ -22,25 +23,14 @@ import {
   useMap,
   useMapsLibrary,
 } from "@vis.gl/react-google-maps";
+import {
+  useRideTrackingStore,
+  getDriverForCategory,
+  type MockDriver,
+  type TrackingStatus,
+} from "@/store/useRideTrackingStore";
 
 // ── Types ──────────────────────────────────────────────
-type RideStatus =
-  | "SEARCHING"
-  | "ACCEPTED"
-  | "ARRIVING"
-  | "ARRIVED"
-  | "IN_PROGRESS"
-  | "COMPLETED"
-  | "CANCELLED";
-
-interface Driver {
-  name: string;
-  vehicle: string;
-  plate: string;
-  rating: number;
-  image?: string;
-}
-
 interface RideData {
   id: string;
   pickupLat: number;
@@ -55,36 +45,32 @@ interface RideData {
   vehicleType: string;
 }
 
-// ── Mock Data ──────────────────────────────────────────
-const MOCK_DRIVERS: Driver[] = [
-  { name: "Ahmed Hassan", vehicle: "Toyota Corolla (White)", plate: "LHR-7890", rating: 4.9 },
-  { name: "Bilal Khan", vehicle: "Honda Civic (Black)", plate: "ISL-4422", rating: 4.8 },
-  { name: "Zeeshan Ali", vehicle: "Suzuki Swift (Silver)", plate: "KHI-1155", rating: 4.7 },
-];
-
-// ── Components ─────────────────────────────────────────
-
-function LiveRideMap({ 
-  pickup, 
-  dropoff, 
-  driverPos, 
-  status 
-}: { 
-  pickup: { lat: number, lng: number }, 
-  dropoff: { lat: number, lng: number },
-  driverPos: { lat: number, lng: number } | null,
-  status: RideStatus
+// ── Live Map Component ─────────────────────────────────
+function LiveRideMap({
+  pickup,
+  dropoff,
+  driverPos,
+}: {
+  pickup: { lat: number; lng: number };
+  dropoff: { lat: number; lng: number };
+  driverPos: { lat: number; lng: number } | null;
+  status: TrackingStatus;
 }) {
   const map = useMap();
   const routesLibrary = useMapsLibrary("routes");
-  const [directionsRenderer, setDirectionsRenderer] = useState<google.maps.DirectionsRenderer | null>(null);
+  const [directionsRenderer, setDirectionsRenderer] =
+    useState<google.maps.DirectionsRenderer | null>(null);
 
   useEffect(() => {
     if (!routesLibrary || !map) return;
     const renderer = new google.maps.DirectionsRenderer({
       map,
       suppressMarkers: true,
-      polylineOptions: { strokeColor: "#3B82F6", strokeWeight: 5, strokeOpacity: 0.8 },
+      polylineOptions: {
+        strokeColor: "#3B82F6",
+        strokeWeight: 5,
+        strokeOpacity: 0.8,
+      },
     });
     setDirectionsRenderer(renderer);
     return () => renderer.setMap(null);
@@ -93,22 +79,35 @@ function LiveRideMap({
   useEffect(() => {
     if (!routesLibrary || !directionsRenderer || !pickup || !dropoff) return;
     const service = new routesLibrary.DirectionsService();
-    service.route({
-      origin: pickup,
-      destination: dropoff,
-      travelMode: google.maps.TravelMode.DRIVING,
-    }, (result, status) => {
-      if (status === "OK") directionsRenderer.setDirections(result);
-    });
+    service.route(
+      {
+        origin: pickup,
+        destination: dropoff,
+        travelMode: google.maps.TravelMode.DRIVING,
+      },
+      (result, status) => {
+        if (status === "OK") directionsRenderer.setDirections(result);
+      }
+    );
   }, [routesLibrary, directionsRenderer, pickup, dropoff]);
 
   return (
     <>
       <AdvancedMarker position={pickup}>
-        <Pin background="#22D3EE" glyphColor="#fff" borderColor="#0891B2" scale={1.2} />
+        <Pin
+          background="#22D3EE"
+          glyphColor="#fff"
+          borderColor="#0891B2"
+          scale={1.2}
+        />
       </AdvancedMarker>
       <AdvancedMarker position={dropoff}>
-        <Pin background="#F87171" glyphColor="#fff" borderColor="#B91C1C" scale={1.2} />
+        <Pin
+          background="#F87171"
+          glyphColor="#fff"
+          borderColor="#B91C1C"
+          scale={1.2}
+        />
       </AdvancedMarker>
       {driverPos && (
         <AdvancedMarker position={driverPos}>
@@ -121,42 +120,46 @@ function LiveRideMap({
   );
 }
 
+// ── Main Component ─────────────────────────────────────
 export default function RidePageContent({ ride }: { ride: RideData }) {
-  const [status, setStatus] = useState<RideStatus>("SEARCHING");
-  const [driver, setDriver] = useState<Driver | null>(null);
+  const {
+    status,
+    driver: globalDriver,
+    activeRideId,
+    setActiveRide,
+    setStatus: setGlobalStatus,
+    setDriver: setGlobalDriver,
+    clearTracking,
+  } = useRideTrackingStore();
+
   const [driverPos, setDriverPos] = useState<{ lat: number; lng: number } | null>(null);
   const [rating, setRating] = useState<number>(0);
-  const [timer, setTimer] = useState<number>(0);
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
 
-  // ── Simulation Logic ────────────────────────────────
+  // ── Initialize tracking ──────────────────────────────
   useEffect(() => {
-    const sequence: { status: RideStatus; delay: number }[] = [
-      { status: "SEARCHING", delay: 0 },
-      { status: "ACCEPTED", delay: 5000 },
-      { status: "ARRIVING", delay: 8000 },
-      { status: "ARRIVED", delay: 15000 },
-      { status: "IN_PROGRESS", delay: 18000 },
-      { status: "COMPLETED", delay: 25000 },
-    ];
-
-    const timeouts = sequence.map((step) => 
-      setTimeout(() => {
-        setStatus(step.status);
-        if (step.status === "ACCEPTED") {
-          setDriver(MOCK_DRIVERS[Math.floor(Math.random() * MOCK_DRIVERS.length)]);
-          setDriverPos({ lat: ride.pickupLat + 0.01, lng: ride.pickupLng + 0.01 });
-        }
-      }, step.delay)
-    );
-
-    return () => timeouts.forEach(clearTimeout);
-  }, [ride]);
+    // Only set as active if not already tracking this ride or if idle
+    if (activeRideId !== ride.id) {
+       setActiveRide(ride.id);
+       // Assign a driver immediately if searching
+       const assignedDriver = getDriverForCategory(ride.vehicleType);
+       setGlobalDriver(assignedDriver);
+    }
+    
+    // Set initial driver position if we have a driver
+    if (globalDriver && !driverPos) {
+       setDriverPos({
+          lat: ride.pickupLat + 0.005,
+          lng: ride.pickupLng + 0.005,
+       });
+    }
+  }, [ride.id, ride.vehicleType, ride.pickupLat, ride.pickupLng, activeRideId, setActiveRide, setGlobalDriver, globalDriver, driverPos]);
 
   // Mock driver movement
   useEffect(() => {
     if (status === "ARRIVING" && driverPos) {
       const interval = setInterval(() => {
-        setDriverPos(prev => {
+        setDriverPos((prev) => {
           if (!prev) return null;
           const latDiff = (ride.pickupLat - prev.lat) * 0.1;
           const lngDiff = (ride.pickupLng - prev.lng) * 0.1;
@@ -167,7 +170,7 @@ export default function RidePageContent({ ride }: { ride: RideData }) {
     }
     if (status === "IN_PROGRESS" && driverPos) {
       const interval = setInterval(() => {
-        setDriverPos(prev => {
+        setDriverPos((prev) => {
           if (!prev) return null;
           const latDiff = (ride.dropoffLat - prev.lat) * 0.05;
           const lngDiff = (ride.dropoffLng - prev.lng) * 0.05;
@@ -176,13 +179,39 @@ export default function RidePageContent({ ride }: { ride: RideData }) {
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [status, ride]);
+  }, [status, ride.pickupLat, ride.pickupLng, ride.dropoffLat, ride.dropoffLng, driverPos]);
+
+  // ── Rating submission ────────────────────────────────
+  const handleRating = async (stars: number) => {
+    setRating(stars);
+    setRatingSubmitted(true);
+    try {
+      await fetch(`/api/bookings/${ride.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating: stars, status: "COMPLETED" }),
+      });
+      toast.success("Thanks for your feedback!");
+    } catch {
+      toast.error("Failed to save rating.");
+    }
+    clearTracking();
+  };
 
   const steps = [
     { label: "Searching", active: true },
-    { label: "Accepted", active: ["ACCEPTED", "ARRIVING", "ARRIVED", "IN_PROGRESS", "COMPLETED"].includes(status) },
-    { label: "Arriving", active: ["ARRIVING", "ARRIVED", "IN_PROGRESS", "COMPLETED"].includes(status) },
-    { label: "Started", active: ["IN_PROGRESS", "COMPLETED"].includes(status) },
+    {
+      label: "Accepted",
+      active: ["ACCEPTED", "ARRIVING", "ARRIVED", "IN_PROGRESS", "COMPLETED"].includes(status),
+    },
+    {
+      label: "Arriving",
+      active: ["ARRIVING", "ARRIVED", "IN_PROGRESS", "COMPLETED"].includes(status),
+    },
+    {
+      label: "Started",
+      active: ["IN_PROGRESS", "COMPLETED"].includes(status),
+    },
     { label: "Finished", active: status === "COMPLETED" },
   ];
 
@@ -197,8 +226,16 @@ export default function RidePageContent({ ride }: { ride: RideData }) {
           <h1 className="text-xl font-bold">Ride Tracking</h1>
           <p className="text-xs text-base-content/50">ID: {ride.id}</p>
         </div>
-        <div className={`ml-auto badge badge-md gap-2 ${status === 'COMPLETED' ? 'badge-success' : 'badge-primary animate-pulse'}`}>
-          {status.replace('_', ' ')}
+        <div
+          className={`ml-auto badge badge-md gap-2 ${
+            status === "COMPLETED"
+              ? "badge-success"
+              : status === "CANCELLED"
+              ? "badge-error"
+              : "badge-primary animate-pulse"
+          }`}
+        >
+          {status.replace("_", " ")}
         </div>
       </div>
 
@@ -210,7 +247,7 @@ export default function RidePageContent({ ride }: { ride: RideData }) {
           mapId="bf51a910020fa2c4"
           disableDefaultUI
         >
-          <LiveRideMap 
+          <LiveRideMap
             pickup={{ lat: ride.pickupLat, lng: ride.pickupLng }}
             dropoff={{ lat: ride.dropoffLat, lng: ride.dropoffLng }}
             driverPos={driverPos}
@@ -223,37 +260,49 @@ export default function RidePageContent({ ride }: { ride: RideData }) {
       <div className="grid grid-cols-3 gap-3">
         <div className="card bg-base-100 border border-base-200 p-3 items-center text-center shadow-sm">
           <MdAccessTime className="text-primary text-xl mb-1" />
-          <p className="text-[10px] uppercase font-bold text-base-content/40">ETA</p>
-          <p className="text-sm font-black">{status === 'COMPLETED' ? '--' : `~${Math.round(ride.durationMin)}m`}</p>
+          <p className="text-[10px] uppercase font-bold text-base-content/40">
+            ETA
+          </p>
+          <p className="text-sm font-black">
+            {status === "COMPLETED" ? "--" : `~${Math.round(ride.durationMin)}m`}
+          </p>
         </div>
         <div className="card bg-base-100 border border-base-200 p-3 items-center text-center shadow-sm">
           <MdMyLocation className="text-success text-xl mb-1" />
-          <p className="text-[10px] uppercase font-bold text-base-content/40">Distance</p>
+          <p className="text-[10px] uppercase font-bold text-base-content/40">
+            Distance
+          </p>
           <p className="text-sm font-black">{ride.distanceKm.toFixed(1)} km</p>
         </div>
         <div className="card bg-base-100 border border-base-200 p-3 items-center text-center shadow-sm">
           <MdAttachMoney className="text-warning text-xl mb-1" />
-          <p className="text-[10px] uppercase font-bold text-base-content/40">Fare</p>
+          <p className="text-[10px] uppercase font-bold text-base-content/40">
+            Fare
+          </p>
           <p className="text-sm font-black">Rs {ride.fare}</p>
         </div>
       </div>
 
       {/* Driver Card */}
-      {driver ? (
+      {globalDriver ? (
         <div className="card bg-base-100 border border-base-200 shadow-md">
           <div className="card-body p-4 flex-row items-center gap-4">
             <div className="avatar">
               <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-primary-content text-2xl font-bold">
-                {driver.name.charAt(0)}
+                {globalDriver.name.charAt(0)}
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-lg leading-tight">{driver.name}</p>
-              <p className="text-xs text-base-content/60 font-medium">{driver.vehicle}</p>
+              <p className="font-bold text-lg leading-tight">{globalDriver.name}</p>
+              <p className="text-xs text-base-content/60 font-medium">
+                {globalDriver.vehicle}
+              </p>
               <div className="flex items-center gap-2 mt-1">
-                <span className="badge badge-sm badge-outline font-mono font-bold">{driver.plate}</span>
+                <span className="badge badge-sm badge-outline font-mono font-bold">
+                  {globalDriver.plate}
+                </span>
                 <div className="flex items-center gap-0.5 text-warning font-bold text-xs">
-                  <MdStar /> {driver.rating}
+                  <MdStar /> {globalDriver.rating}
                 </div>
               </div>
             </div>
@@ -267,7 +316,9 @@ export default function RidePageContent({ ride }: { ride: RideData }) {
       ) : (
         <div className="card bg-base-100 border-2 border-dashed border-base-300 py-8 items-center text-center">
           <span className="loading loading-spinner loading-md text-primary mb-2"></span>
-          <p className="text-sm font-bold text-base-content/60">Finding your driver...</p>
+          <p className="text-sm font-bold text-base-content/60">
+            Finding your driver...
+          </p>
         </div>
       )}
 
@@ -276,39 +327,57 @@ export default function RidePageContent({ ride }: { ride: RideData }) {
         <div className="card-body p-0">
           <ul className="steps steps-vertical lg:steps-horizontal w-full py-6 px-4">
             {steps.map((s, i) => (
-              <li key={i} className={`step ${s.active ? 'step-primary font-bold' : 'text-base-content/20'}`}>
-                <span className="text-[10px] uppercase tracking-tighter">{s.label}</span>
+              <li
+                key={i}
+                className={`step ${s.active ? "step-primary font-bold" : "text-base-content/20"}`}
+              >
+                <span className="text-[10px] uppercase tracking-tighter">
+                  {s.label}
+                </span>
               </li>
             ))}
           </ul>
         </div>
       </div>
 
-      {/* Fare Breakdown & Rating */}
-      {status === 'COMPLETED' ? (
+      {/* Completion / Cancel */}
+      {status === "COMPLETED" ? (
         <div className="card bg-success/5 border-2 border-success/20 animate-in fade-in zoom-in duration-500">
           <div className="card-body p-5 items-center text-center">
             <MdCheckCircle className="text-5xl text-success mb-2" />
             <h2 className="text-xl font-black">Ride Completed!</h2>
-            <p className="text-sm text-base-content/60 mb-4">How was your experience with {driver?.name}?</p>
-            
-            <div className="rating rating-lg gap-2">
-              {[1, 2, 3, 4, 5].map((s) => (
-                <input 
-                  key={s} 
-                  type="radio" 
-                  name="rating" 
-                  className="mask mask-star-2 bg-warning" 
-                  onClick={() => {
-                    setRating(s);
-                    toast.success("Thanks for your feedback!");
-                  }}
-                  checked={rating === s}
-                  onChange={() => {}}
-                />
-              ))}
-            </div>
-            
+            <p className="text-sm text-base-content/60 mb-4">
+              How was your experience with {globalDriver?.name}?
+            </p>
+
+            {!ratingSubmitted ? (
+              <div className="rating rating-lg gap-2">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <input
+                    key={s}
+                    type="radio"
+                    name="rating"
+                    className="mask mask-star-2 bg-warning"
+                    onClick={() => handleRating(s)}
+                    checked={rating === s}
+                    onChange={() => {}}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-warning font-bold">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <MdStar
+                    key={s}
+                    className={`text-2xl ${s <= rating ? "text-warning" : "text-base-300"}`}
+                  />
+                ))}
+                <span className="ml-2 text-base-content text-sm">
+                  {rating}.0 — Saved!
+                </span>
+              </div>
+            )}
+
             <div className="divider w-full my-4"></div>
             <div className="w-full space-y-2 text-sm font-medium">
               <div className="flex justify-between opacity-60">
@@ -324,23 +393,38 @@ export default function RidePageContent({ ride }: { ride: RideData }) {
                 <span className="text-success">Rs {ride.fare}</span>
               </div>
             </div>
+
+            <Link
+              href="/dashboard"
+              className="btn btn-primary btn-block gap-2 mt-4"
+            >
+              <MdDashboard className="text-lg" />
+              Go to Dashboard
+            </Link>
           </div>
         </div>
-      ) : (
-        status !== 'CANCELLED' && (
-          <button 
+      ) : status !== "CANCELLED" ? (
+        <button
             onClick={() => {
               if (confirm("Are you sure you want to cancel this ride?")) {
-                setStatus('CANCELLED');
+                setGlobalStatus("CANCELLED");
                 toast.error("Ride cancelled");
+                clearTracking();
               }
             }}
-            disabled={['IN_PROGRESS', 'ARRIVED'].includes(status)}
-            className="btn btn-ghost btn-block text-error hover:bg-error/10 gap-2 border-2 border-error/10"
-          >
-            <MdClose /> Cancel Ride
-          </button>
-        )
+          disabled={["IN_PROGRESS", "ARRIVED"].includes(status)}
+          className="btn btn-ghost btn-block text-error hover:bg-error/10 gap-2 border-2 border-error/10"
+        >
+          <MdClose /> Cancel Ride
+        </button>
+      ) : (
+        <div className="card bg-error/5 border-2 border-error/20 p-6 text-center">
+          <MdClose className="text-4xl text-error mx-auto mb-2" />
+          <p className="font-bold text-lg">Ride Cancelled</p>
+          <Link href="/book" className="btn btn-primary btn-sm mt-4">
+            Book a new ride
+          </Link>
+        </div>
       )}
     </div>
   );

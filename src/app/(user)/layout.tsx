@@ -1,6 +1,7 @@
 import { requireRole } from "@/lib/session";
 import UserShell from "@/components/ui/shell/user-shell";
 import { StoreInitializer } from "@/components/auth/store-initializer";
+import RideTracker from "@/components/ui/ride-tracker";
 import { Fragment } from "react/jsx-runtime";
 
 export default async function UserLayout({
@@ -23,6 +24,7 @@ export default async function UserLayout({
   return (
     <Fragment>
       <StoreInitializer user={user} />
+      <RideTracker />
       <UserShell user={user}>{children}</UserShell>
     </Fragment>
   );

@@ -10,7 +10,7 @@ export default function MapProvider({
   return (
     <APIProvider
       apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
-      libraries={["places", "marker"]}
+      libraries={["places", "marker", "routes"]}
     >
       {children}
     </APIProvider>

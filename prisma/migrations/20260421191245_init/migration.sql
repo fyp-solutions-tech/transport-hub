@@ -1,18 +1,8 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('USER', 'DRIVER', 'ADMIN');
 
-  - You are about to drop the `Post` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `User` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE "Post" DROP CONSTRAINT "Post_authorId_fkey";
-
--- DropTable
-DROP TABLE "Post";
-
--- DropTable
-DROP TABLE "User";
+-- CreateEnum
+CREATE TYPE "RideStatus" AS ENUM ('PENDING', 'SEARCHING', 'ACCEPTED', 'ARRIVING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
 
 -- CreateTable
 CREATE TABLE "user" (
@@ -21,6 +11,7 @@ CREATE TABLE "user" (
     "email" TEXT NOT NULL,
     "emailVerified" BOOLEAN NOT NULL DEFAULT false,
     "image" TEXT,
+    "role" "Role" NOT NULL DEFAULT 'USER',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -72,6 +63,31 @@ CREATE TABLE "verification" (
     CONSTRAINT "verification_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "rides" (
+    "id" TEXT NOT NULL,
+    "passengerId" TEXT NOT NULL,
+    "driverId" TEXT,
+    "pickupLat" DOUBLE PRECISION NOT NULL,
+    "pickupLng" DOUBLE PRECISION NOT NULL,
+    "pickupAddress" TEXT NOT NULL,
+    "dropoffLat" DOUBLE PRECISION NOT NULL,
+    "dropoffLng" DOUBLE PRECISION NOT NULL,
+    "dropoffAddress" TEXT NOT NULL,
+    "distanceKm" DOUBLE PRECISION,
+    "durationMin" DOUBLE PRECISION,
+    "fare" DOUBLE PRECISION,
+    "status" "RideStatus" NOT NULL DEFAULT 'PENDING',
+    "vehicleType" TEXT,
+    "rating" DOUBLE PRECISION,
+    "paymentMethod" TEXT DEFAULT 'cash',
+    "loanAmount" DOUBLE PRECISION DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "rides_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 
@@ -92,3 +108,9 @@ ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId"
 
 -- AddForeignKey
 ALTER TABLE "account" ADD CONSTRAINT "account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "rides" ADD CONSTRAINT "rides_passengerId_fkey" FOREIGN KEY ("passengerId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "rides" ADD CONSTRAINT "rides_driverId_fkey" FOREIGN KEY ("driverId") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;

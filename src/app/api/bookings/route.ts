@@ -30,6 +30,8 @@ export async function POST(request: NextRequest) {
       distanceKm,
       durationMin,
       fare,
+      paymentMethod,
+      loanAmount,
     } = body;
 
     // Required field validation
@@ -73,6 +75,8 @@ export async function POST(request: NextRequest) {
         durationMin: durationMin ? parseFloat(durationMin) : null,
         fare: parseFloat(fare),
         status: "PENDING",
+        paymentMethod: paymentMethod ? String(paymentMethod) : "cash",
+        loanAmount: loanAmount ? parseFloat(loanAmount) : 0,
       },
     });
 

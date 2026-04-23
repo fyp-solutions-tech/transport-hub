@@ -7,6 +7,7 @@ import {
   MdFilterList,
   MdStar,
   MdCalendarToday,
+  MdHistory,
 } from "react-icons/md";
 
 interface Ride {

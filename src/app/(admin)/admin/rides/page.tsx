@@ -1,20 +1,36 @@
 import { MdRoute, MdSearch, MdLocationOn } from "react-icons/md";
+import { prisma } from "@/lib/prisma";
 
-const statusBadge: Record<string, string> = {
-  completed: "badge-success",
-  cancelled: "badge-error",
-  ongoing: "badge-warning",
-  pending: "badge-info",
-};
+export default async function AdminRidesPage() {
+  const rides = await prisma.ride.findMany({
+    include: {
+      passenger: true,
+      driver: true
+    },
+    orderBy: { createdAt: "desc" }
+  });
 
-const mockRides = [
-  { id: "r88", date: "Apr 18, 2026", time: "11:30 AM", passenger: "Razia S.", driver: "Ahmed H.", from: "Mirpur 10", to: "Motijheel", fare: "৳95", status: "completed" },
-  { id: "r87", date: "Apr 18, 2026", time: "10:15 AM", passenger: "Nadia R.", driver: "Rahim U.", from: "Banani", to: "Dhanmondi", fare: "৳60", status: "cancelled" },
-  { id: "r86", date: "Apr 17, 2026", time: "7:45 PM", passenger: "Karim A.", driver: "Ahmed H.", from: "Uttara", to: "Gulshan 2", fare: "৳130", status: "completed" },
-  { id: "r85", date: "Apr 17, 2026", time: "3:00 PM", passenger: "Habib U.", driver: "—", from: "Dhanmondi", to: "Airport", fare: "৳200", status: "pending" },
-];
+  const displayRides = rides.map(r => ({
+    id: r.id,
+    date: new Intl.DateTimeFormat('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).format(new Date(r.createdAt)),
+    time: new Date(r.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    passenger: r.passenger?.name || "Unknown",
+    driver: r.driver?.name || "Searching...",
+    from: r.pickupAddress,
+    to: r.dropoffAddress,
+    fare: `৳${r.fare || 0}`,
+    status: r.status.toLowerCase()
+  }));
 
-export default function AdminRidesPage() {
+  const statusBadge: Record<string, string> = {
+    completed: "badge-success",
+    cancelled: "badge-error",
+    in_progress: "badge-warning",
+    arriving: "badge-warning",
+    accepted: "badge-info",
+    searching: "badge-info",
+    pending: "badge-ghost",
+  };
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -26,7 +42,7 @@ export default function AdminRidesPage() {
           <div className="stat-figure text-success">
             <MdRoute className="text-2xl" />
           </div>
-          <div className="stat-value text-xl">{mockRides.length}</div>
+          <div className="stat-value text-xl">{displayRides.length}</div>
           <div className="stat-desc">Rides (last 2 days)</div>
         </div>
       </div>
@@ -67,9 +83,9 @@ export default function AdminRidesPage() {
               </tr>
             </thead>
             <tbody>
-              {mockRides.map((ride) => (
+              {displayRides.map((ride) => (
                 <tr key={ride.id} className="hover cursor-pointer">
-                  <td className="font-mono text-xs text-base-content/60">#{ride.id}</td>
+                  <td className="font-mono text-xs text-base-content/60">#{ride.id.slice(-6)}</td>
                   <td>
                     <p className="text-sm">{ride.date}</p>
                     <p className="text-xs text-base-content/50">{ride.time}</p>
@@ -84,8 +100,8 @@ export default function AdminRidesPage() {
                         <MdLocationOn className="text-error text-xs -m-0.5" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-base-content/80">{ride.from}</p>
-                        <p className="text-base-content/80">{ride.to}</p>
+                        <p className="text-base-content/80 line-clamp-1">{ride.from}</p>
+                        <p className="text-base-content/80 line-clamp-1">{ride.to}</p>
                       </div>
                     </div>
                   </td>

@@ -1,6 +1,83 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { MdDirectionsCar, MdEdit, MdCheckCircle, MdWarning, MdElectricCar } from "react-icons/md";
+import { toast } from "sonner";
+
+interface VehicleData {
+  vehicleMake: string;
+  vehicleModel: string;
+  vehicleYear: string;
+  vehicleColor: string;
+  vehiclePlate: string;
+  vehicleType: string;
+}
 
 export default function DriverVehiclePage() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [data, setData] = useState<VehicleData>({
+    vehicleMake: "",
+    vehicleModel: "",
+    vehicleYear: "",
+    vehicleColor: "",
+    vehiclePlate: "",
+    vehicleType: "economy",
+  });
+
+  useEffect(() => {
+    async function fetchVehicle() {
+      try {
+        const res = await fetch("/api/driver/vehicle");
+        const json = await res.json();
+        if (json) {
+          setData({
+            vehicleMake: json.vehicleMake || "",
+            vehicleModel: json.vehicleModel || "",
+            vehicleYear: json.vehicleYear || "",
+            vehicleColor: json.vehicleColor || "",
+            vehiclePlate: json.vehiclePlate || "",
+            vehicleType: json.vehicleType || "economy",
+          });
+        }
+      } catch (error) {
+        toast.error("Failed to load vehicle data");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchVehicle();
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/driver/vehicle", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        toast.success("Vehicle details updated successfully!");
+      } else {
+        const err = await res.json();
+        toast.error(err.error || "Failed to update vehicle details");
+      }
+    } catch (error) {
+      toast.error("An error occurred while saving");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <span className="loading loading-spinner loading-lg text-accent"></span>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-xl mx-auto space-y-6">
       <div>
@@ -14,20 +91,22 @@ export default function DriverVehiclePage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm opacity-75">Current Vehicle</p>
-              <h2 className="text-2xl font-bold mt-0.5">Toyota Axio</h2>
-              <p className="text-sm opacity-75">2019 · White</p>
+              <h2 className="text-2xl font-bold mt-0.5">
+                {data.vehicleMake} {data.vehicleModel} || "Not set"
+              </h2>
+              <p className="text-sm opacity-75">{data.vehicleYear} · {data.vehicleColor}</p>
             </div>
             <MdElectricCar className="text-6xl opacity-30" />
           </div>
           <div className="bg-accent-content/10 rounded-xl p-3 mt-2">
             <p className="text-center font-mono font-bold text-lg tracking-widest">
-              Dhaka–Ka 11–1234
+              {data.vehiclePlate || "PLATE-PENDING"}
             </p>
           </div>
           <div className="flex gap-4 text-sm mt-1">
             <div>
               <p className="opacity-75">Type</p>
-              <p className="font-semibold">Economy</p>
+              <p className="font-semibold capitalize">{data.vehicleType}</p>
             </div>
             <div>
               <p className="opacity-75">Seats</p>
@@ -41,7 +120,7 @@ export default function DriverVehiclePage() {
         </div>
       </div>
 
-      {/* Document status */}
+      {/* Document status (MOCKED as requested for visual detail) */}
       <div className="card bg-base-100 border border-base-200 shadow-sm">
         <div className="card-body gap-0">
           <h2 className="font-semibold mb-3">Document Status</h2>
@@ -65,15 +144,7 @@ export default function DriverVehiclePage() {
                     {doc.status === "pending" ? "Upload required" : `Expires: ${doc.expiry}`}
                   </p>
                 </div>
-                <span
-                  className={`badge badge-sm ${
-                    doc.status === "verified"
-                      ? "badge-success"
-                      : doc.status === "expiring"
-                      ? "badge-warning"
-                      : "badge-error"
-                  }`}
-                >
+                <span className={`badge badge-sm ${doc.status === "verified" ? "badge-success" : doc.status === "expiring" ? "badge-warning" : "badge-error"}`}>
                   {doc.status}
                 </span>
               </div>
@@ -88,10 +159,10 @@ export default function DriverVehiclePage() {
           <h2 className="font-semibold">Update Vehicle Info</h2>
           <div className="grid grid-cols-2 gap-4">
             {[
-              { label: "Make", placeholder: "e.g. Toyota", id: "vehicle-make" },
-              { label: "Model", placeholder: "e.g. Axio", id: "vehicle-model" },
-              { label: "Year", placeholder: "e.g. 2019", id: "vehicle-year" },
-              { label: "Color", placeholder: "e.g. White", id: "vehicle-color" },
+              { label: "Make", id: "vehicle-make", key: "vehicleMake" },
+              { label: "Model", id: "vehicle-model", key: "vehicleModel" },
+              { label: "Year", id: "vehicle-year", key: "vehicleYear" },
+              { label: "Color", id: "vehicle-color", key: "vehicleColor" },
             ].map((f) => (
               <div key={f.id} className="form-control">
                 <label className="label py-1">
@@ -100,29 +171,51 @@ export default function DriverVehiclePage() {
                 <input
                   id={f.id}
                   type="text"
-                  placeholder={f.placeholder}
+                  value={data[f.key as keyof VehicleData]}
+                  onChange={(e) => setData({ ...data, [f.key]: e.target.value })}
                   className="input input-bordered input-sm"
                 />
               </div>
             ))}
           </div>
-          <div className="form-control">
-            <label className="label py-1">
-              <span className="label-text text-xs font-medium">License Plate</span>
-            </label>
-            <input
-              id="vehicle-plate"
-              type="text"
-              placeholder="e.g. Dhaka-Ka 11-1234"
-              className="input input-bordered input-sm"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="form-control">
+              <label className="label py-1">
+                <span className="label-text text-xs font-medium">License Plate</span>
+              </label>
+              <input
+                id="vehicle-plate"
+                type="text"
+                value={data.vehiclePlate}
+                onChange={(e) => setData({ ...data, vehiclePlate: e.target.value })}
+                className="input input-bordered input-sm"
+              />
+            </div>
+            <div className="form-control">
+              <label className="label py-1">
+                <span className="label-text text-xs font-medium">Vehicle Category</span>
+              </label>
+              <select
+                className="select select-bordered select-sm"
+                value={data.vehicleType}
+                onChange={(e) => setData({ ...data, vehicleType: e.target.value })}
+              >
+                <option value="economy">Economy</option>
+                <option value="comfort">Comfort</option>
+                <option value="moto">Moto</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
 
-      <button id="save-vehicle-btn" className="btn btn-accent btn-block gap-2">
-        <MdEdit />
-        Save Vehicle Details
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className={`btn btn-accent btn-block gap-2 ${saving ? "loading" : ""}`}
+      >
+        {!saving && <MdEdit />}
+        {saving ? "Saving..." : "Save Vehicle Details"}
       </button>
     </div>
   );

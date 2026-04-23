@@ -1,4 +1,5 @@
 import { requireRole } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
 import {
   MdPeople,
   MdDirectionsCar,
@@ -9,24 +10,93 @@ import {
   MdWarning,
 } from "react-icons/md";
 
-const stats = [
-  { label: "Total Users", value: "0", sub: "registered passengers", icon: <MdPeople className="text-primary text-2xl" />, color: "bg-primary/10" },
-  { label: "Active Drivers", value: "0", sub: "online now", icon: <MdDirectionsCar className="text-accent text-2xl" />, color: "bg-accent/10" },
-  { label: "Rides Today", value: "0", sub: "completed", icon: <MdRoute className="text-success text-2xl" />, color: "bg-success/10" },
-  { label: "Revenue Today", value: "৳0", sub: "platform earnings", icon: <MdAttachMoney className="text-secondary text-2xl" />, color: "bg-secondary/10" },
-];
-
-const recentActivity = [
-  { text: "New driver registered: Ahmed H.", time: "2 min ago", dot: "bg-accent" },
-  { text: "Ride #r88 completed — ৳95", time: "5 min ago", dot: "bg-success" },
-  { text: "Ride #r87 cancelled by user", time: "12 min ago", dot: "bg-error" },
-  { text: "New user signed up: Razia S.", time: "18 min ago", dot: "bg-primary" },
-  { text: "Driver Karim A. went offline", time: "24 min ago", dot: "bg-warning" },
-];
-
 export default async function AdminDashboardPage() {
   const { session } = await requireRole("ADMIN");
   const firstName = session.user.name.split(" ")[0];
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const [
+    userCount,
+    activeDrivers,
+    ridesToday,
+    revenueData,
+    recentRides,
+    newUsers
+  ] = await Promise.all([
+    prisma.user.count({ where: { role: "USER" } }),
+    prisma.user.count({ where: { role: "DRIVER", isOnline: true } }),
+    prisma.ride.count({ 
+      where: { 
+        status: "COMPLETED",
+        createdAt: { gte: today }
+      } 
+    }),
+    prisma.ride.aggregate({
+      where: {
+        status: "COMPLETED",
+        createdAt: { gte: today }
+      },
+      _sum: {
+        fare: true
+      }
+    }),
+    prisma.ride.findMany({
+      take: 3,
+      orderBy: { createdAt: "desc" },
+      include: { passenger: true }
+    }),
+    prisma.user.findMany({
+      take: 2,
+      where: { role: "USER" },
+      orderBy: { createdAt: "desc" }
+    })
+  ]);
+
+  const stats = [
+    { 
+      label: "Total Users", 
+      value: userCount.toString(), 
+      sub: "registered passengers", 
+      icon: <MdPeople className="text-primary text-2xl" />, 
+      color: "bg-primary/10" 
+    },
+    { 
+      label: "Active Drivers", 
+      value: activeDrivers.toString(), 
+      sub: "online now", 
+      icon: <MdDirectionsCar className="text-accent text-2xl" />, 
+      color: "bg-accent/10" 
+    },
+    { 
+      label: "Rides Today", 
+      value: ridesToday.toString(), 
+      sub: "completed", 
+      icon: <MdRoute className="text-success text-2xl" />, 
+      color: "bg-success/10" 
+    },
+    { 
+      label: "Revenue Today", 
+      value: `৳${(revenueData._sum.fare || 0).toLocaleString()}`, 
+      sub: "platform earnings", 
+      icon: <MdAttachMoney className="text-secondary text-2xl" />, 
+      color: "bg-secondary/10" 
+    },
+  ];
+
+  const recentActivity = [
+    ...recentRides.map(r => ({
+      text: `Ride #${r.id.slice(-4)} ${r.status.toLowerCase()} — ৳${r.fare || 0}`,
+      time: new Date(r.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      dot: r.status === "COMPLETED" ? "bg-success" : r.status === "CANCELLED" ? "bg-error" : "bg-warning"
+    })),
+    ...newUsers.map(u => ({
+      text: `New user signed up: ${u.name}`,
+      time: "Joined today",
+      dot: "bg-primary"
+    }))
+  ].slice(0, 5);
 
   return (
     <div className="space-y-8">

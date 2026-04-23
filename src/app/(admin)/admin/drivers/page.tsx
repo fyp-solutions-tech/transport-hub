@@ -1,18 +1,34 @@
 import { MdDirectionsCar, MdSearch, MdMoreVert, MdCheckCircle, MdBlock, MdWarning } from "react-icons/md";
+import { prisma } from "@/lib/prisma";
 
-const mockDrivers = [
-  { id: "d1", name: "Ahmed Hassan", email: "ahmed@example.com", vehicle: "Toyota Axio", plate: "Dhaka-Ka 11-1234", trips: 47, rating: 4.8, status: "active", docStatus: "verified" },
-  { id: "d2", name: "Rahim Uddin", email: "rahim@example.com", vehicle: "Honda Fit", plate: "Dhaka-Ga 22-5678", trips: 12, rating: 4.5, status: "active", docStatus: "expiring" },
-  { id: "d3", name: "Fatema Khatun", email: "fatema@example.com", vehicle: "Suzuki Alto", plate: "Dhaka-Kha 33-9012", trips: 0, rating: null, status: "pending", docStatus: "pending" },
-];
+export default async function AdminDriversPage() {
+  const drivers = await prisma.user.findMany({
+    where: { role: "DRIVER" },
+    include: {
+      _count: {
+        select: { driverRides: true }
+      }
+    },
+    orderBy: { createdAt: "desc" }
+  });
 
-const docBadge: Record<string, string> = {
-  verified: "badge-success",
-  expiring: "badge-warning",
-  pending: "badge-error",
-};
+  const displayDrivers = drivers.map(d => ({
+    id: d.id,
+    name: d.name,
+    email: d.email,
+    vehicle: d.vehicleMake ? `${d.vehicleMake} ${d.vehicleModel || ""}` : "No Vehicle",
+    plate: d.vehiclePlate || "N/A",
+    trips: d._count.driverRides,
+    rating: 4.8, // Rating calculation not implemented yet, using default
+    status: d.isOnline ? "active" : "offline",
+    docStatus: "verified" // Document tracking not in schema
+  }));
 
-export default function AdminDriversPage() {
+  const docBadge: Record<string, string> = {
+    verified: "badge-success",
+    expiring: "badge-warning",
+    pending: "badge-error",
+  };
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -24,7 +40,7 @@ export default function AdminDriversPage() {
           <div className="stat-figure text-accent">
             <MdDirectionsCar className="text-2xl" />
           </div>
-          <div className="stat-value text-xl">{mockDrivers.length}</div>
+          <div className="stat-value text-xl">{displayDrivers.length}</div>
           <div className="stat-desc">Total drivers</div>
         </div>
       </div>
@@ -33,7 +49,7 @@ export default function AdminDriversPage() {
       <div className="alert alert-warning py-3">
         <MdWarning className="text-lg" />
         <span className="text-sm">
-          <strong>1 driver</strong> has pending document verification. Review below.
+          <strong>{displayDrivers.filter(d => d.docStatus === 'pending').length} driver</strong> has pending document verification. Review below.
         </span>
       </div>
 
@@ -67,7 +83,7 @@ export default function AdminDriversPage() {
               </tr>
             </thead>
             <tbody>
-              {mockDrivers.map((driver) => (
+              {displayDrivers.map((driver) => (
                 <tr key={driver.id}>
                   <td>
                     <div className="flex items-center gap-3">

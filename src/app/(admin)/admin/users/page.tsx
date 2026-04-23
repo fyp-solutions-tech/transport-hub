@@ -1,13 +1,26 @@
 import { MdPeople, MdSearch, MdMoreVert, MdShield, MdBlock } from "react-icons/md";
+import { prisma } from "@/lib/prisma";
 
-const mockUsers = [
-  { id: "u1", name: "Razia Sultana", email: "razia@example.com", role: "USER", rides: 8, joined: "Jan 2026", status: "active" },
-  { id: "u2", name: "Karim Ahmed", email: "karim@example.com", role: "USER", rides: 3, joined: "Feb 2026", status: "active" },
-  { id: "u3", name: "Nadia Rahman", email: "nadia@example.com", role: "USER", rides: 15, joined: "Dec 2025", status: "active" },
-  { id: "u4", name: "Habib Ullah", email: "habib@example.com", role: "USER", rides: 0, joined: "Apr 2026", status: "suspended" },
-];
+export default async function AdminUsersPage() {
+  const users = await prisma.user.findMany({
+    where: { role: "USER" },
+    include: {
+      _count: {
+        select: { passengerRides: true }
+      }
+    },
+    orderBy: { createdAt: "desc" }
+  });
 
-export default function AdminUsersPage() {
+  const displayUsers = users.map(u => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    rides: u._count.passengerRides,
+    joined: new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(new Date(u.createdAt)),
+    status: "active" // Defaulting to active as there's no status field in schema yet
+  }));
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -19,7 +32,7 @@ export default function AdminUsersPage() {
           <div className="stat-figure text-primary">
             <MdPeople className="text-2xl" />
           </div>
-          <div className="stat-value text-xl">{mockUsers.length}</div>
+          <div className="stat-value text-xl">{displayUsers.length}</div>
           <div className="stat-desc">Total users</div>
         </div>
       </div>
@@ -52,7 +65,7 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody>
-              {mockUsers.map((user) => (
+              {displayUsers.map((user) => (
                 <tr key={user.id}>
                   <td>
                     <div className="flex items-center gap-3">

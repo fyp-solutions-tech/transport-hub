@@ -24,6 +24,17 @@ model User {
   emailVerified Boolean   @default(false)
   image         String?
   role          Role      @default(USER)
+  phone         String?
+  
+  // Vehicle Info (for Drivers)
+  vehicleMake   String?
+  vehicleModel  String?
+  vehicleYear   String?
+  vehicleColor  String?
+  vehiclePlate  String?
+  vehicleType   String?
+  isOnline      Boolean   @default(false)
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
@@ -99,6 +110,7 @@ model Ride {
   passenger       User       @relation("PassengerRides", fields: [passengerId], references: [id])
   driverId        String?
   driver          User?      @relation("DriverRides", fields: [driverId], references: [id])
+  isDriverAccepted Boolean   @default(false)
   
   pickupLat       Float
   pickupLng       Float
@@ -121,4 +133,17 @@ model Ride {
   updatedAt       DateTime   @updatedAt
 
   @@map("rides")
+}
+
+model SystemSetting {
+  id            String   @id @default("global")
+  platformName  String   @default("Transport Hub")
+  supportEmail  String   @default("support@transporthub.com")
+  maintenance   Boolean  @default(false)
+  baseFare      Float    @default(30)
+  perKmRate     Float    @default(10)
+  platformFee   Float    @default(15)
+  updatedAt     DateTime @updatedAt
+
+  @@map("system_settings")
 }

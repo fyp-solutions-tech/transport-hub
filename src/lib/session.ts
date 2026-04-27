@@ -1,3 +1,4 @@
+// src/lib/session.ts
 import { auth } from "./auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -33,4 +34,17 @@ export async function requireRole(role: UserRole) {
   }
 
   return { session, role: userRole };
+}
+
+/** Get the correct dashboard URL based on user role */
+export function getDashboardUrl(role: UserRole): string {
+  switch (role) {
+    case "DRIVER":
+      return "/driver/dashboard";
+    case "ADMIN":
+      return "/admin/dashboard";
+    case "USER":
+    default:
+      return "/dashboard";
+  }
 }

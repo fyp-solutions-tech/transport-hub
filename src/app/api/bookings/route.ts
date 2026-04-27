@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Create ride in database ───────────────────────
-    const ride = await prisma.ride.create({
+    const ride = await prisma.rides.create({
       data: {
         passengerId: session.user.id,
         pickupLat: parseFloat(pickupLat),
@@ -77,7 +77,8 @@ export async function POST(request: NextRequest) {
         status: "PENDING",
         paymentMethod: paymentMethod ? String(paymentMethod) : "cash",
         loanAmount: loanAmount ? parseFloat(loanAmount) : 0,
-      },
+        updatedAt: new Date(),  // Add this line
+      } as any,  // Add type assertion
     });
 
     return NextResponse.json(

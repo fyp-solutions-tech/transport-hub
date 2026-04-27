@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const rides = await prisma.ride.findMany({
+    const rides = await prisma.rides.findMany({
       where,
       orderBy: { createdAt: "desc" },
     });

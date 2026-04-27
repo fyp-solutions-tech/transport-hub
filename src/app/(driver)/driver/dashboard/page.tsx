@@ -1,3 +1,4 @@
+// src/app/(driver)/driver/dashboard/page.tsx
 import { requireRole } from "@/lib/session";
 import Link from "next/link";
 import {
@@ -8,18 +9,53 @@ import {
   MdHistory,
   MdLocationOn,
   MdNotifications,
+  MdRateReview,
+  MdTrendingUp,
 } from "react-icons/md";
-
-const stats = [
-  { label: "Today's Earnings", value: "৳0", icon: <MdAttachMoney className="text-success text-2xl" />, color: "bg-success/10" },
-  { label: "Trips Today", value: "0", icon: <MdDirectionsCar className="text-primary text-2xl" />, color: "bg-primary/10" },
-  { label: "Acceptance Rate", value: "—", icon: <MdStar className="text-warning text-2xl" />, color: "bg-warning/10" },
-  { label: "Total Trips", value: "0", icon: <MdHistory className="text-info text-2xl" />, color: "bg-info/10" },
-];
+import { prisma } from "@/lib/prisma";
 
 export default async function DriverDashboardPage() {
   const { session } = await requireRole("DRIVER");
   const firstName = session.user.name.split(" ")[0];
+
+  // Fetch driver stats
+  let todayEarnings = 0
+  let tripsToday = 0
+  let avgRating = 0
+  let totalRatings = 0
+  let totalTrips = 0
+  let ratedTripsData: any[] = [] // Move here to fix type error
+
+  try {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // Today's trips
+    const todayTrips = await prisma.rides.findMany({
+      where: {
+        driverId: session.user.id,
+        createdAt: { gte: today },
+        status: "COMPLETED",
+      },
+    })
+    tripsToday = todayTrips.length
+    todayEarnings = todayTrips.reduce((sum: number, r: any) => sum + (r.fare || 0), 0)
+
+    // All trips
+    const allTrips = await prisma.rides.findMany({
+      where: { driverId: session.user.id },
+    })
+    totalTrips = allTrips.length
+
+    // Ratings received - assign to outer variable
+    ratedTripsData = allTrips.filter((r: any) => r.rating)
+    totalRatings = ratedTripsData.length
+    if (totalRatings > 0) {
+      avgRating = ratedTripsData.reduce((sum: number, r: any) => sum + r.rating, 0) / totalRatings
+    }
+  } catch (error) {
+    console.error('Failed to fetch driver stats:', error)
+  }
 
   return (
     <div className="space-y-8">
@@ -47,20 +83,106 @@ export default async function DriverDashboardPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((s) => (
-          <div
-            key={s.label}
-            className="card bg-base-100 border border-base-200 shadow-sm hover:shadow-md transition-shadow"
-          >
-            <div className="card-body p-5">
-              <div className={`w-11 h-11 rounded-xl ${s.color} flex items-center justify-center mb-3`}>
-                {s.icon}
-              </div>
-              <p className="text-2xl font-bold">{s.value}</p>
-              <p className="text-sm text-base-content/60">{s.label}</p>
+        <div className="card bg-base-100 border border-base-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="card-body p-5">
+            <div className="w-11 h-11 rounded-xl bg-success/10 flex items-center justify-center mb-3">
+              <MdAttachMoney className="text-success text-2xl" />
             </div>
+            <p className="text-2xl font-bold">৳{todayEarnings}</p>
+            <p className="text-sm text-base-content/60">Today's Earnings</p>
           </div>
-        ))}
+        </div>
+
+        <div className="card bg-base-100 border border-base-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="card-body p-5">
+            <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+              <MdDirectionsCar className="text-primary text-2xl" />
+            </div>
+            <p className="text-2xl font-bold">{tripsToday}</p>
+            <p className="text-sm text-base-content/60">Trips Today</p>
+          </div>
+        </div>
+
+        {/* Avg Rating - FROM PASSENGERS */}
+        <div className="card bg-base-100 border border-base-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="card-body p-5">
+            <div className="w-11 h-11 rounded-xl bg-warning/10 flex items-center justify-center mb-3">
+              <MdStar className="text-warning text-2xl" />
+            </div>
+            <div className="flex items-center gap-1">
+              <p className="text-2xl font-bold">
+                {avgRating > 0 ? avgRating.toFixed(1) : "—"}
+              </p>
+              {avgRating > 0 && (
+                <span className="text-warning text-lg">★</span>
+              )}
+            </div>
+            <p className="text-sm text-base-content/60">
+              Avg Rating {totalRatings > 0 && `(${totalRatings})`}
+            </p>
+          </div>
+        </div>
+
+        <div className="card bg-base-100 border border-base-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="card-body p-5">
+            <div className="w-11 h-11 rounded-xl bg-info/10 flex items-center justify-center mb-3">
+              <MdHistory className="text-info text-2xl" />
+            </div>
+            <p className="text-2xl font-bold">{totalTrips}</p>
+            <p className="text-sm text-base-content/60">Total Trips</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Driver Rating Section - FROM PASSENGERS */}
+      <div className="card bg-base-100 border border-base-200 shadow-sm">
+        <div className="card-body p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="card-title text-lg">
+              <MdRateReview className="text-warning mr-2" />
+              My Ratings
+            </h2>
+            <Link href="/driver/ratings" className="btn btn-ghost btn-sm">
+              View All
+            </Link>
+          </div>
+
+          {totalRatings === 0 ? (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center mx-auto mb-3">
+                <MdStar className="text-3xl text-base-content/30" />
+              </div>
+              <p className="font-medium text-base-content/60">No ratings yet</p>
+              <p className="text-sm text-base-content/40 mt-1">
+                Complete trips to receive ratings from passengers
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {/* Rating distribution - FIXED: use ratedTripsData */}
+              {[5, 4, 3, 2, 1].map((star) => {
+                const count = ratedTripsData.filter((r: any) => r.rating === star).length
+                const percentage = totalRatings > 0 ? (count / totalRatings) * 100 : 0
+                return (
+                  <div key={star} className="flex items-center gap-3">
+                    <div className="flex items-center gap-1 w-12">
+                      <span className="text-xs font-medium">{star}</span>
+                      <MdStar className="text-warning text-xs" />
+                    </div>
+                    <progress 
+                      className="progress progress-warning flex-1" 
+                      value={percentage} 
+                      max="100"
+                    />
+                    <span className="text-xs text-base-content/50 w-8 text-right">
+                      {count}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Incoming requests */}
@@ -97,16 +219,31 @@ export default async function DriverDashboardPage() {
               <p className="text-sm text-base-content/60">View past trips & earnings</p>
             </div>
           </Link>
+          
+          {/* My Ratings - DRIVER SEES RATINGS FROM PASSENGERS */}
           <Link
-            href="/driver/vehicle"
+            href="/driver/ratings"
             className="card bg-base-100 border border-base-200 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
           >
             <div className="card-body items-center text-center p-6">
-              <MdDirectionsCar className="text-4xl text-accent mb-2" />
-              <h3 className="card-title text-base">My Vehicle</h3>
-              <p className="text-sm text-base-content/60">Update vehicle info</p>
+              <MdRateReview className="text-4xl text-warning mb-2" />
+              <h3 className="card-title text-base">My Ratings</h3>
+              <p className="text-sm text-base-content/60">See what passengers say</p>
             </div>
           </Link>
+          
+          {/* Reports & Analytics - NEW */}
+          <Link
+            href="/driver/analytics"
+            className="card bg-base-100 border border-base-200 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
+          >
+            <div className="card-body items-center text-center p-6">
+              <MdTrendingUp className="text-4xl text-info mb-2" />
+              <h3 className="card-title text-base">Reports & Analytics</h3>
+              <p className="text-sm text-base-content/60">Performance & export data</p>
+            </div>
+          </Link>
+          
           <Link
             href="/driver/profile"
             className="card bg-base-100 border border-base-200 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
@@ -120,5 +257,5 @@ export default async function DriverDashboardPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

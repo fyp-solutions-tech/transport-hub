@@ -1,3 +1,4 @@
+// src/components/layouts/form.tsx
 "use client"
 import { FaUserLock } from "react-icons/fa6";
 import { LuMail } from "react-icons/lu";
@@ -34,9 +35,13 @@ const FormLayout = (
 
     useEffect(() => {
         if (state.success) {
-            window.location.href = `/dashboard`;
+            if (para) {
+                window.location.href = "/driver/dashboard";
+            } else {
+                window.location.href = "/dashboard";
+            }
         }
-    }, [state.success]);
+    }, [state.success, para]);
 
     const handlePasswordReveal = () => {
         setPasswordReveal(!passwordReveal)

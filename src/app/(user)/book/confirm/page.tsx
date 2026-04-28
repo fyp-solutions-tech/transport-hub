@@ -28,6 +28,9 @@ import {
 import { usePaymentStore } from "@/store/usePaymentStore";
 import { useRideTrackingStore } from "@/store/useRideTrackingStore";
 
+// Fix: Add PaymentMethod type
+type PaymentMethod = "cash" | "loan" | "card";
+
 const PAYMENT_OPTIONS: { id: PaymentMethod; label: string; desc: string; icon: React.ReactNode }[] = [
   { id: "cash", label: "Cash on Delivery", desc: "Pay driver directly", icon: <MdAccountBalance className="text-xl text-success" /> },
   { id: "loan", label: "Loan", desc: "Company pays now, repay later", icon: <MdPayment className="text-xl text-warning" /> },

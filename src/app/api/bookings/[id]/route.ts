@@ -14,7 +14,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const ride = await prisma.ride.findUnique({ where: { id } });
+    const ride = await prisma.rides.findUnique({ where: { id } });
     if (!ride || ride.passengerId !== session.user.id) {
       return NextResponse.json({ error: "Ride not found" }, { status: 404 });
     }
@@ -47,7 +47,7 @@ export async function PATCH(
     if (paymentMethod !== undefined) updateData.paymentMethod = paymentMethod;
     if (loanAmount !== undefined) updateData.loanAmount = parseFloat(loanAmount);
 
-    const ride = await prisma.ride.update({
+    const ride = await prisma.rides.update({
       where: { id },
       data: updateData,
     });

@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,63 +6,27 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  USER
-  DRIVER
-  ADMIN
-}
-
-model User {
-  id            String    @id
-  name          String
-  email         String
-  emailVerified Boolean   @default(false)
-  image         String?
-  role          Role      @default(USER)
-  phone         String?
-  
-  // Vehicle Info (for Drivers)
-  vehicleMake   String?
-  vehicleModel  String?
-  vehicleYear   String?
-  vehicleColor  String?
-  vehiclePlate  String?
-  vehicleType   String?
-  isOnline      Boolean   @default(false)
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  passengerRides Ride[]    @relation("PassengerRides")
-  driverRides    Ride[]    @relation("DriverRides")
-
-  @@unique([email])
-  @@map("user")
-}
-
-model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  data      Json?    @default("{}")
+  read      Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@index([userId])
-  @@map("session")
+  @@index([userId, read])
+  @@index([createdAt])
 }
 
-model Account {
+model account {
   id                    String    @id
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -76,22 +35,74 @@ model Account {
   scope                 String?
   password              String?
   createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  updatedAt             DateTime
+  user                  user      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@map("account")
 }
 
-model Verification {
+model rides {
+  id                           String     @id
+  passengerId                  String
+  driverId                     String?
+  pickupLat                    Float
+  pickupLng                    Float
+  pickupAddress                String
+  dropoffLat                   Float
+  dropoffLng                   Float
+  dropoffAddress               String
+  distanceKm                   Float?
+  durationMin                  Float?
+  fare                         Float?
+  status                       RideStatus @default(PENDING)
+  vehicleType                  String?
+  rating                       Float?
+  paymentMethod                String?    @default("cash")
+  loanAmount                   Float?     @default(0)
+  createdAt                    DateTime   @default(now())
+  updatedAt                    DateTime
+  user_rides_driverIdTouser    user?      @relation("rides_driverIdTouser", fields: [driverId], references: [id])
+  user_rides_passengerIdTouser user       @relation("rides_passengerIdTouser", fields: [passengerId], references: [id])
+}
+
+model session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model user {
+  id                            String    @id
+  name                          String
+  email                         String    @unique
+  emailVerified                 Boolean   @default(false)
+  image                         String?
+  role                          Role      @default(USER)
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime
+  account                       account[]
+  rides_rides_driverIdTouser    rides[]   @relation("rides_driverIdTouser")
+  rides_rides_passengerIdTouser rides[]   @relation("rides_passengerIdTouser")
+  session                       session[]
+}
+
+model verification {
   id         String   @id
   identifier String
   value      String
   expiresAt  DateTime
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  updatedAt  DateTime
 
   @@index([identifier])
-  @@map("verification")
 }
 
 enum RideStatus {
@@ -104,46 +115,8 @@ enum RideStatus {
   CANCELLED
 }
 
-model Ride {
-  id              String     @id @default(cuid())
-  passengerId     String
-  passenger       User       @relation("PassengerRides", fields: [passengerId], references: [id])
-  driverId        String?
-  driver          User?      @relation("DriverRides", fields: [driverId], references: [id])
-  isDriverAccepted Boolean   @default(false)
-  
-  pickupLat       Float
-  pickupLng       Float
-  pickupAddress   String
-  
-  dropoffLat      Float
-  dropoffLng      Float
-  dropoffAddress  String
-  
-  distanceKm      Float?
-  durationMin     Float?
-  fare            Float?
-  status          RideStatus @default(PENDING)
-  
-  vehicleType     String?
-  rating          Float?
-  paymentMethod   String?    @default("cash")
-  loanAmount      Float?     @default(0)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-
-  @@map("rides")
-}
-
-model SystemSetting {
-  id            String   @id @default("global")
-  platformName  String   @default("Transport Hub")
-  supportEmail  String   @default("support@transporthub.com")
-  maintenance   Boolean  @default(false)
-  baseFare      Float    @default(30)
-  perKmRate     Float    @default(10)
-  platformFee   Float    @default(15)
-  updatedAt     DateTime @updatedAt
-
-  @@map("system_settings")
+enum Role {
+  USER
+  DRIVER
+  ADMIN
 }

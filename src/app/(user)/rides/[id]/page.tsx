@@ -9,7 +9,7 @@ interface PageProps {
 export default async function RidePage({ params }: PageProps) {
   const { id } = await params;
 
-  const ride = await prisma.ride.findUnique({
+  const ride = await prisma.rides.findUnique({
     where: { id },
   });
 

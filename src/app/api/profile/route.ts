@@ -1,3 +1,4 @@
+// src/app/api/profile/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
@@ -19,17 +20,19 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Aggregate ride stats
-    const rides = await prisma.ride.findMany({
+    // FIX 1: 'ride' → 'rides' (your schema uses plural)
+    const rides = await prisma.rides.findMany({
       where: { passengerId: session.user.id },
       select: { fare: true, rating: true, status: true },
     });
 
     const totalRides = rides.length;
-    const completedRides = rides.filter((r) => r.status === "COMPLETED");
-    const totalSpent = completedRides.reduce((sum, r) => sum + (r.fare || 0), 0);
-    const ratings = completedRides.filter((r) => r.rating != null).map((r) => r.rating!);
-    const avgRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+    
+    // FIX 2: Add type annotations to all callbacks
+    const completedRides = rides.filter((r: { fare: number | null; rating: number | null; status: string | null }) => r.status === "COMPLETED");
+    const totalSpent = completedRides.reduce((sum: number, r: { fare: number | null }) => sum + (r.fare || 0), 0);
+    const ratings = completedRides.filter((r: { rating: number | null }) => r.rating != null).map((r: { rating: number | null }) => r.rating!);
+    const avgRating = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0;
 
     return NextResponse.json({
       user,

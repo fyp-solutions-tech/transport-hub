@@ -1,3 +1,4 @@
+// src/app/auth/[page]/page.tsx
 import FormLayout from "@/components/layouts/form"
 
 export interface AuthProps {
@@ -6,15 +7,17 @@ export interface AuthProps {
 
 interface PageProps {
     params: Promise<AuthProps>;
+    searchParams: Promise<{ driver?: string }>;
 }
 
 const Page = async (
-    { params }: PageProps
+    { params, searchParams }: PageProps
 ) => {
     const { page } = await params
+    const { driver } = await searchParams
 
     return (
-        <FormLayout page={page} />
+        <FormLayout page={page} para={driver === "true"} />
     )
 }
 

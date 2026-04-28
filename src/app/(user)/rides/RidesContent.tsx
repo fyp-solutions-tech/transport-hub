@@ -10,6 +10,8 @@ import {
   MdHistory,
 } from "react-icons/md";
 
+
+
 interface Ride {
   id: string;
   fare: number | null;

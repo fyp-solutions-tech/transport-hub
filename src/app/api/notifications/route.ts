@@ -1,23 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-
-const TEMP_USER_ID = 'user-1'
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
     const skip = (page - 1) * limit
 
+    const notificationModel = (prisma as any).notification ?? (prisma as any).notifications;
     const [notifications, total] = await Promise.all([
-      prisma.notification.findMany({
-        where: { userId: TEMP_USER_ID },
+      notificationModel.findMany({
+        where: { userId: session.user.id },
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.notification.count({ where: { userId: TEMP_USER_ID } }),
+      notificationModel.count({ where: { userId: session.user.id } }),
     ])
 
     return NextResponse.json({ notifications, total, hasMore: skip + limit < total })
@@ -29,10 +35,16 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const notificationModel = (prisma as any).notification ?? (prisma as any).notifications;
     const body = await req.json()
-    const notification = await prisma.notification.create({
+    const notification = await notificationModel.create({
       data: {
-        userId: TEMP_USER_ID,
+        userId: session.user.id,
         type: body.type || 'SYSTEM',
         title: body.title,
         message: body.message,

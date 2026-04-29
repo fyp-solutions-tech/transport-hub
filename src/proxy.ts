@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 
 export async function proxy(request: NextRequest) {
   // ── DEVELOPER LOCK / UNLOCK SYSTEM ─────────────────────
-  const isAuthMiddlewareEnabled = process.env.NEXT_PUBLIC_AUTH_PROXY_ENABLED === "true";
+  const isAuthMiddlewareEnabled = process.env.AUTH_PROXY_ENABLED !== "false";
 
   // If developer turned it OFF → completely bypass middleware (unlock)
   if (!isAuthMiddlewareEnabled) {

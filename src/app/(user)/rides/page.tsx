@@ -9,7 +9,7 @@ export default async function RidesPage() {
   let rides: any[] = []
   
   try {
-    rides = await prisma.rides.findMany({  // Note: 'rides' not 'ride' based on your schema
+    rides = await prisma.ride.findMany({
       where: { passengerId: session.user.id },
       orderBy: { createdAt: "desc" },
       // Don't use select if you're not sure of field names

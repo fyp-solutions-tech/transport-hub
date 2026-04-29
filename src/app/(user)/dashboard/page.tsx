@@ -11,7 +11,7 @@ export default async function UserDashboardPage() {
   let totalSpent = 0
   
   try {
-    const rides = await prisma.rides.findMany({
+    const rides = await prisma.ride.findMany({
       where: { passengerId: session.user.id },
     })
 
@@ -91,7 +91,7 @@ export default async function UserDashboardPage() {
           </Link>
 
           <Link 
-            href="/payments" 
+            href="/payment" 
             className="card bg-base-100 border border-base-200 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
           >
             <div className="card-body items-center text-center p-6">

@@ -28,7 +28,7 @@ export function RideTrackerProvider({ children }: { children: React.ReactNode })
         'IDLE': null,
         'SEARCHING': 'ACCEPTED',
         'ACCEPTED': 'ARRIVING',
-        'ARRIVING': 'ARRIVED',
+        'ARRIVING': 'IN_PROGRESS',
         'ARRIVED': 'IN_PROGRESS',
         'IN_PROGRESS': 'COMPLETED',
         'COMPLETED': null,
@@ -66,9 +66,6 @@ export function RideTrackerProvider({ children }: { children: React.ReactNode })
           break;
         case 'ARRIVING':
           toast.info("Driver is on the way to your location.", { id: toastId });
-          break;
-        case 'ARRIVED':
-          toast.success("Driver has arrived at the pickup point!", { id: toastId });
           break;
         case 'IN_PROGRESS':
           toast.info("Your ride has started. Have a safe journey!", { id: toastId });

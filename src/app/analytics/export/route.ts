@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const { session } = await requireRole('DRIVER')
     
-    const allRides = await prisma.rides.findMany({
+    const allRides = await prisma.ride.findMany({
       where: { driverId: session.user.id },
       orderBy: { createdAt: 'desc' },
     })

@@ -5,8 +5,7 @@ import { ProfileContent } from "./ProfileContent";
 export default async function UserProfilePage() {
   const { session } = await requireRole("USER");
 
-  // Fix 1: 'ride' → 'rides' (plural)
-  const rides = await prisma.rides.findMany({
+  const rides = await prisma.ride.findMany({
     where: { passengerId: session.user.id },
     select: { rating: true, status: true },
   });

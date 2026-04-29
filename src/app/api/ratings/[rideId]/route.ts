@@ -1,21 +1,23 @@
 // src/app/api/ratings/[rideId]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
+import { requireRole } from '@/lib/session'
+import { prisma } from '@/lib/prisma'
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ rideId: string }> }  // ← Add Promise<>
+  _request: NextRequest,
+  { params }: { params: Promise<{ rideId: string }> }
 ) {
   try {
-    const { rideId } = await params  // ← Add await
-
-    // Check if rating exists for this ride
-    // const existingRating = await db.ratings.findFirst({
-    //   where: { rideId }
-    // })
+    const { session } = await requireRole('DRIVER')
+    const { rideId } = await params
+    const ride = await prisma.ride.findUnique({ where: { id: rideId } })
+    if (!ride || ride.driverId !== session.user.id) {
+      return NextResponse.json({ error: 'Ride not found' }, { status: 404 })
+    }
 
     return NextResponse.json({
-      exists: false,
-      rating: null
+      exists: ride.rating != null,
+      rating: ride.rating
     })
   } catch (error) {
     console.error('Failed to fetch rating:', error)

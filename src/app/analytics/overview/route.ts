@@ -16,7 +16,7 @@ export async function GET() {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
     // Fetch all rides for this driver
-    const allRides = await prisma.rides.findMany({
+    const allRides = await prisma.ride.findMany({
       where: { 
         driverId,
         status: 'COMPLETED' 

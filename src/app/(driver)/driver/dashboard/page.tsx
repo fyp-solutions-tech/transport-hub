@@ -31,7 +31,7 @@ export default async function DriverDashboardPage() {
     today.setHours(0, 0, 0, 0)
 
     // Today's trips
-    const todayTrips = await prisma.rides.findMany({
+    const todayTrips = await prisma.ride.findMany({
       where: {
         driverId: session.user.id,
         createdAt: { gte: today },
@@ -42,7 +42,7 @@ export default async function DriverDashboardPage() {
     todayEarnings = todayTrips.reduce((sum: number, r: any) => sum + (r.fare || 0), 0)
 
     // All trips
-    const allTrips = await prisma.rides.findMany({
+    const allTrips = await prisma.ride.findMany({
       where: { driverId: session.user.id },
     })
     totalTrips = allTrips.length

@@ -1,48 +1,40 @@
 // src/app/api/ratings/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { requireRole } from '@/lib/session'
+import { prisma } from '@/lib/prisma'
+import { z } from 'zod'
+
+const submitRatingSchema = z.object({
+  rideId: z.string().trim().min(1),
+  rating: z.coerce.number().int().min(1).max(5),
+  comment: z.string().trim().max(500).optional(),
+  type: z.string().optional(),
+})
 
 export async function POST(request: NextRequest) {
   try {
     const { session } = await requireRole('DRIVER')
-    const body = await request.json()
-    const { rideId, rating, comment, type = 'RIDER' } = body
-
-    // Validate rating
-    if (!rating || rating < 1 || rating > 5) {
+    const parsed = submitRatingSchema.safeParse(await request.json())
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Rating must be between 1 and 5' },
+        { error: 'Invalid rating payload' },
         { status: 400 }
       )
     }
+    const { rideId, rating } = parsed.data
 
-    if (!rideId) {
-      return NextResponse.json(
-        { error: 'Ride ID is required' },
-        { status: 400 }
-      )
+    const ride = await prisma.ride.findUnique({ where: { id: rideId } })
+    if (!ride || ride.driverId !== session.user.id) {
+      return NextResponse.json({ error: 'Ride not found' }, { status: 404 })
+    }
+    if (ride.status !== 'COMPLETED') {
+      return NextResponse.json({ error: 'Only completed rides can be rated' }, { status: 400 })
     }
 
-    // Save to database
-    // await prisma.rating.create({
-    //   data: {
-    //     rideId,
-    //     rating,
-    //     comment: comment || '',
-    //     ratedBy: session.user.id,
-    //     type,
-    //     createdAt: new Date(),
-    //   }
-    // })
-
-    // Update ride status
-    // await prisma.ride.update({
-    //   where: { id: rideId },
-    //   data: {
-    //     driverRating: rating,
-    //     driverComment: comment,
-    //   }
-    // })
+    await prisma.ride.update({
+      where: { id: rideId },
+      data: { rating },
+    })
 
     return NextResponse.json({
       success: true,
@@ -60,39 +52,31 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   try {
     const { session } = await requireRole('DRIVER')
-    
-    // Fetch ratings for this driver
-    // const ratings = await prisma.rating.findMany({
-    //   where: {
-    //     ride: {
-    //       driverId: session.user.id,
-    //     },
-    //     type: 'DRIVER',
-    //   },
-    //   include: {
-    //     ride: {
-    //       include: {
-    //         rider: true,
-    //       }
-    //     }
-    //   },
-    //   orderBy: { createdAt: 'desc' }
-    // })
+    const rides = await prisma.ride.findMany({
+      where: { driverId: session.user.id, rating: { not: null } },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    })
 
-    const ratings = [
-      {
-        id: '1',
-        rideId: 'ride_001',
-        rating: 5,
-        comment: 'Excellent rider, very polite!',
-        categories: ['communication', 'punctuality'],
-        riderName: 'Ahmed Khan',
-        pickup: 'Central Station',
-        dropoff: 'Algora Mall',
-        fare: '৳450',
-        createdAt: new Date().toISOString(),
-      }
-    ]
+    const userIds = [...new Set(rides.map((r) => r.passengerId))]
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, name: true },
+    })
+    const userMap = new Map(users.map((u) => [u.id, u.name]))
+
+    const ratings = rides.map((ride) => ({
+      id: ride.id,
+      rideId: ride.id,
+      rating: ride.rating ?? 0,
+      comment: '',
+      categories: [],
+      riderName: userMap.get(ride.passengerId) ?? 'Passenger',
+      pickup: ride.pickupAddress,
+      dropoff: ride.dropoffAddress,
+      fare: `৳${ride.fare ?? 0}`,
+      createdAt: ride.createdAt.toISOString(),
+    }))
 
     return NextResponse.json({ ratings })
   } catch (error) {

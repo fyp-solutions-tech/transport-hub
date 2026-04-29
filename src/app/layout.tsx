@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { Toaster } from "sonner";
 import { RideTrackerProvider } from "@/components/providers/ride-tracker-provider";
 import "./globals.css";
 
-const roboto = Roboto({
-  variable: '--font-roboto',
+const plus_jakarta_sans = Plus_Jakarta_Sans({
+  variable: '--font-plus-jakarta-sans',
   display: 'swap',
   subsets: ["latin"],
 });
@@ -23,9 +23,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${roboto.variable} h-full antialiased`}
+      className={`${plus_jakarta_sans.className} h-full antialiased`}
+      data-theme="stitch"
     >
-      <body className="font-sans min-h-full flex flex-col">
+      <body className="bg-base-100 text-base-content min-h-screen flex flex-col pt-20 pb-16 md:pb-0 ">
         <RideTrackerProvider>
           {children}
           <Toaster

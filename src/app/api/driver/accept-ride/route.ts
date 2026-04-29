@@ -17,28 +17,19 @@ export async function POST(request: NextRequest) {
 
     const driverId = session.user.id;
 
-    // First check if ride is still pending
-    const ride = await prisma.ride.findUnique({
-      where: { id: rideId },
-    });
-
-    if (!ride) {
-      return NextResponse.json({ error: "Ride not found" }, { status: 404 });
-    }
-
-    if (ride.status !== "PENDING") {
-      return NextResponse.json({ error: "Ride is no longer available" }, { status: 400 });
-    }
-
-    // Update ride status and assign driver
-    const updatedRide = await prisma.ride.update({
-      where: { id: rideId },
+    // Atomically claim the ride to prevent two drivers accepting at once.
+    const claim = await prisma.ride.updateMany({
+      where: { id: rideId, status: "PENDING", driverId: null },
       data: {
         driverId,
         status: "ACCEPTED",
-        isDriverAccepted: true,
       },
     });
+    if (claim.count === 0) {
+      return NextResponse.json({ error: "Ride is no longer available" }, { status: 409 });
+    }
+
+    const updatedRide = await prisma.ride.findUnique({ where: { id: rideId } });
 
     return NextResponse.json({ success: true, ride: updatedRide });
   } catch (error: unknown) {

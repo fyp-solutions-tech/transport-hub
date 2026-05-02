@@ -28,7 +28,7 @@ export default function SidebarNav({ items }: SidebarNavProps) {
           <li key={item.href}>
             <Link
               href={item.href}
-              className={`flex items-center gap-3 rounded-xl font-medium transition-all duration-200 ${
+              className={`flex items-center gap-3 rounded font-medium transition-all duration-200 ${
                 isActive
                   ? "bg-primary text-primary-content shadow-md"
                   : "text-base-content/70 hover:bg-base-200 hover:text-base-content"

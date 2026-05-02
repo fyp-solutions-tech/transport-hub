@@ -1,19 +1,18 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import Link from "next/link";
 import {
-  MdToggleOn,
-  MdDirectionsCar,
-  MdAttachMoney,
-  MdStar,
-  MdHistory,
   MdLocationOn,
-  MdNotifications,
   MdCheck,
+  MdNavigation,
+  MdCall,
+  MdChat,
+  MdShield,
+  MdDirectionsCar,
 } from "react-icons/md";
 import { toast } from "sonner";
 import { useRideTrackingStore } from "@/store/useRideTrackingStore";
+import { useDriverStore } from "@/store/useDriverStore";
 
 interface DriverStats {
   todayEarnings: string;
@@ -22,23 +21,12 @@ interface DriverStats {
   totalTrips: string;
   totalEarnings: string;
   avgRating: string;
-}
-
-interface IncomingRide {
-  id: string;
-  pickupAddress: string;
-  dropoffAddress: string;
-  fare: number;
-  passenger: {
-    name: string;
-    image?: string;
-  };
+  currentRide?: any;
 }
 
 export default function DashboardContent({ initialName }: { initialName: string }) {
   const [stats, setStats] = useState<DriverStats | null>(null);
-  const [incomingRides, setIncomingRides] = useState<IncomingRide[]>([]);
-  const [isOnline, setIsOnline] = useState(false);
+  const { isOnline, setOnline, incomingRides, setIncomingRides } = useDriverStore();
   const [loading, setLoading] = useState(true);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
 
@@ -49,20 +37,22 @@ export default function DashboardContent({ initialName }: { initialName: string 
       const [statsRes, incomingRes, profileRes] = await Promise.all([
         fetch("/api/driver/stats"),
         fetch("/api/driver/incoming"),
-        fetch("/api/driver/profile")
+        fetch("/api/driver/profile"),
       ]);
 
       if (statsRes.ok) setStats(await statsRes.json());
       if (incomingRes.ok) {
         const data = await incomingRes.json();
-        setIncomingRides(data.rides || []);
+        const rides = data.rides || [];
+        setIncomingRides(rides);
       }
       if (profileRes.ok) {
         const data = await profileRes.json();
-        setIsOnline(data.driver?.isOnline || false);
+        setOnline(data.driver?.isOnline || false);
       }
     } catch (error) {
       console.error("Dashboard fetch error:", error);
+      toast.error("Connection lost. Retrying...");
     } finally {
       setLoading(false);
     }
@@ -70,29 +60,34 @@ export default function DashboardContent({ initialName }: { initialName: string 
 
   useEffect(() => {
     fetchDashboardData();
-    // Poll for new rides every 10 seconds if online
     const interval = setInterval(() => {
       if (isOnline) fetchDashboardData();
-    }, 10000);
+    }, 5000); // Polling every 5 seconds for responsive feel
     return () => clearInterval(interval);
   }, [fetchDashboardData, isOnline]);
 
   const toggleOnline = async () => {
     const newStatus = !isOnline;
+    const promise = fetch("/api/driver/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isOnline: newStatus }),
+    });
+
+    toast.promise(promise, {
+      loading: newStatus ? "Going online..." : "Going offline...",
+      success: (res) => {
+        if (!res.ok) throw new Error();
+        setOnline(newStatus);
+        return newStatus ? "You are now ONLINE 🚗" : "You are now OFFLINE";
+      },
+      error: "Failed to update status",
+    });
+
     try {
-      const res = await fetch("/api/driver/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isOnline: newStatus }),
-      });
-      if (res.ok) {
-        setIsOnline(newStatus);
-        toast.success(newStatus ? "You are now ONLINE 🚗" : "You are now OFFLINE");
-        fetchDashboardData();
-      }
-    } catch (error) {
-      toast.error("Failed to update status");
-    }
+      const res = await promise;
+      if (res.ok) fetchDashboardData();
+    } catch {}
   };
 
   const acceptRide = async (rideId: string) => {
@@ -104,199 +99,203 @@ export default function DashboardContent({ initialName }: { initialName: string 
         body: JSON.stringify({ rideId }),
       });
       const data = await res.json();
-      
       if (res.ok) {
-        toast.success("Ride accepted! Starting navigation...");
-        setActiveRide(rideId); // Start the global tracking flow
-        // The RideTrackerProvider in the background will now pick this up
+        toast.success("Ride accepted! Starting navigation...", {
+          icon: "🚀",
+          duration: 5000
+        });
+        setActiveRide(rideId);
       } else {
         toast.error(data.error || "Failed to accept ride");
-        fetchDashboardData(); // Refresh to see if it's gone
+        fetchDashboardData();
       }
-    } catch (error) {
-      toast.error("An error occurred");
+    } catch {
+      toast.error("An error occurred. Please check your connection.");
     } finally {
       setAcceptingId(null);
     }
   };
 
-  const displayStats = [
-    { label: "Today's Earnings", value: stats?.todayEarnings || "৳0", icon: <MdAttachMoney className="text-success text-2xl" />, color: "bg-success/10" },
-    { label: "Trips Today", value: stats?.todayTrips || "0", icon: <MdDirectionsCar className="text-primary text-2xl" />, color: "bg-primary/10" },
-    { label: "Acceptance Rate", value: stats?.acceptanceRate || "—", icon: <MdStar className="text-warning text-2xl" />, color: "bg-warning/10" },
-    { label: "Total Trips", value: stats?.totalTrips || "0", icon: <MdHistory className="text-info text-2xl" />, color: "bg-info/10" },
-  ];
-
   return (
-    <div className="space-y-8 pb-12">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Welcome, {initialName} 🚗</h1>
-          <p className="text-base-content/60 mt-1">Driver Dashboard</p>
-        </div>
-        {/* Availability Toggle */}
-        <div className="card bg-base-100 border border-base-200 shadow-sm">
-          <div className="card-body flex-row items-center gap-4 py-3 px-5">
-            <div>
-              <p className="font-semibold text-sm">Availability</p>
-              <p className="text-xs text-base-content/50">
-                {isOnline ? "You are Online" : "Toggle to go online"}
-              </p>
+    <div className="flex flex-col gap-5 h-full">
+
+      {/* Online Toggle */}
+      <div className="bg-base-100 border border-base-200 rounded-2xl shadow-[0_8px_30px_rgba(37,99,235,0.06)] p-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-bold text-base-content">Availability</p>
+            <p className="text-xs text-base-content/50 mt-0.5">
+              {isOnline ? "You are Online" : "Toggle to go online"}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-bold ${
+                isOnline
+                  ? "bg-success/10 text-success border-success/20"
+                  : "bg-base-200 text-base-content/40 border-base-300"
+              }`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  isOnline ? "bg-success animate-pulse" : "bg-base-content/20"
+                }`}
+              />
+              {isOnline ? "Online" : "Offline"}
             </div>
             <input
               type="checkbox"
               checked={isOnline}
               onChange={toggleOnline}
-              className="toggle toggle-success toggle-lg"
+              className="toggle toggle-success"
             />
           </div>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {displayStats.map((s) => (
-          <div
-            key={s.label}
-            className="card bg-base-100 border border-base-200 shadow-sm hover:shadow-md transition-shadow"
-          >
-            <div className="card-body p-5">
-              <div className={`w-11 h-11 rounded-xl ${s.color} flex items-center justify-center mb-3`}>
-                {s.icon}
-              </div>
-              <p className="text-2xl font-bold">{s.value}</p>
-              <p className="text-sm text-base-content/60">{s.label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Incoming requests */}
-      <div>
+      {/* Current Ride / Waiting Card */}
+      <div className="bg-base-100 border border-base-200 rounded-2xl shadow-[0_8px_30px_rgba(37,99,235,0.06)] p-5 grow flex flex-col">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Incoming Requests</h2>
-          <span className={`badge ${incomingRides.length > 0 ? 'badge-primary' : 'badge-ghost'}`}>
-            {incomingRides.length} pending
+          <h4 className="font-bold text-base-content">Current State</h4>
+          <span className={`badge badge-sm border-0 font-bold ${stats?.currentRide ? 'bg-primary/10 text-primary' : 'bg-success/10 text-success'}`}>
+            {stats?.currentRide ? 'Active Ride' : 'Waiting for Trip'}
           </span>
         </div>
 
-        {!isOnline ? (
-          <div className="card bg-base-200/50 border border-dashed border-base-300">
-            <div className="card-body items-center py-12 text-center">
-              <div className="w-16 h-16 rounded-full bg-base-300 flex items-center justify-center mb-3 animate-pulse">
-                <MdNotifications className="text-3xl text-base-content/20" />
-              </div>
-              <p className="font-medium text-base-content/40">You are currently offline</p>
-              <p className="text-sm text-base-content/30 mt-1">
-                Go online to start receiving ride requests
-              </p>
-            </div>
-          </div>
-        ) : incomingRides.length === 0 ? (
-          <div className="card bg-base-100 border border-base-200">
-            <div className="card-body items-center py-16 text-center">
-              <div className="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center mb-3">
-                <MdNotifications className="text-3xl text-base-content/30 animate-bounce" />
-              </div>
-              <p className="font-medium text-base-content/60">Searching for rides...</p>
-              <p className="text-sm text-base-content/40 mt-1">
-                We'll notify you as soon as a request matches your vehicle
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {incomingRides.map((ride) => (
-              <div key={ride.id} className="card bg-base-100 border-2 border-primary/20 shadow-lg animate-in fade-in slide-in-from-bottom-4">
-                <div className="card-body p-5 gap-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="avatar">
-                        <div className="w-10 h-10 rounded-full bg-primary/10">
-                           {ride.passenger.image ? (
-                             <img src={ride.passenger.image} alt={ride.passenger.name} />
-                           ) : (
-                             <div className="flex items-center justify-center h-full text-lg font-bold text-primary">
-                               {ride.passenger.name.charAt(0)}
-                             </div>
-                           )}
-                        </div>
-                      </div>
-                      <div>
-                        <p className="font-bold">{ride.passenger.name}</p>
-                        <p className="text-xs text-base-content/50">Requested now</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                       <p className="text-xl font-bold text-success">৳{ride.fare}</p>
-                       <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/30">Estimated Fare</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 py-2">
-                    <div className="flex items-start gap-2 text-sm italic">
-                      <div className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />
-                      <p className="text-base-content/70 line-clamp-1">{ride.pickupAddress}</p>
-                    </div>
-                    <div className="flex items-start gap-2 text-sm">
-                      <MdLocationOn className="text-error shrink-0 mt-0.5" />
-                      <p className="text-base-content/90 line-clamp-1 font-medium">{ride.dropoffAddress}</p>
-                    </div>
-                  </div>
-
-                  <div className="card-actions justify-end mt-2">
-                    <button 
-                      onClick={() => acceptRide(ride.id)}
-                      disabled={!!acceptingId}
-                      className={`btn btn-primary btn-sm flex-1 gap-2 ${acceptingId === ride.id ? 'loading' : ''}`}
-                    >
-                      {acceptingId === ride.id ? 'Accepting...' : <><MdCheck className="text-lg"/> Accept Ride</>}
-                    </button>
-                  </div>
+        {stats?.currentRide ? (
+          <>
+            {/* Passenger mini profile */}
+            <div className="flex items-center gap-4 p-4 bg-base-200/60 rounded-xl border border-base-200 mb-5">
+              <div className="avatar placeholder">
+                <div className="w-12 h-12 rounded-full bg-primary/10 text-primary font-bold text-lg">
+                  <span>{stats.currentRide.passenger?.name?.charAt(0) || "P"}</span>
                 </div>
               </div>
-            ))}
+              <div>
+                <p className="font-bold text-base-content">{stats.currentRide.passenger?.name || "Passenger"}</p>
+                <div className="flex items-center gap-1 text-sm">
+                  <span className="text-warning">★</span>
+                  <span className="font-semibold text-base-content/60 text-xs">
+                    {stats.currentRide.passenger?.rating ? stats.currentRide.passenger.rating.toFixed(1) : "5.0"} Rating
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick actions */}
+            <div className="grid grid-cols-3 gap-2 mb-5">
+              {[
+                { icon: <MdNavigation className="text-primary text-xl" />, label: "Navigate" },
+                { icon: <MdCall className="text-primary text-xl" />, label: "Call" },
+                { icon: <MdChat className="text-primary text-xl" />, label: "Chat" },
+              ].map(({ icon, label }) => (
+                <button
+                  key={label}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-base-200 hover:bg-base-200 transition-colors"
+                >
+                  {icon}
+                  <span className="text-[10px] font-bold uppercase text-base-content/50">
+                    {label}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <button className="btn btn-primary w-full font-bold shadow-sm shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all mt-auto">
+              {stats.currentRide.status === "ACCEPTED" ? "Arrive at Pickup" : 
+               stats.currentRide.status === "ARRIVING" ? "Start Ride" : "Complete Ride"}
+            </button>
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center p-8 text-center bg-base-200/40 rounded-xl border border-dashed border-base-300 grow min-h-[220px]">
+             <div className="w-12 h-12 bg-base-100 rounded-full flex items-center justify-center mb-3 text-base-content/20 shadow-sm">
+               <MdDirectionsCar className="text-2xl" />
+             </div>
+             <p className="text-sm font-bold text-base-content/40">No active ride</p>
+             <p className="text-[10px] text-base-content/30 mt-1 max-w-[200px]">Select a request to get started</p>
           </div>
         )}
       </div>
 
-      {/* Quick Links */}
-       <div>
-        <h2 className="text-lg font-semibold mb-4">Quick Links</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Link
-            href="/driver/trips"
-            className="card bg-base-100 border border-base-200 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
-          >
-            <div className="card-body items-center text-center p-6">
-              <MdHistory className="text-4xl text-primary mb-2" />
-              <h3 className="card-title text-base">Trip History</h3>
-              <p className="text-sm text-base-content/60">View past trips & earnings</p>
-            </div>
-          </Link>
-          <Link
-            href="/driver/vehicle"
-            className="card bg-base-100 border border-base-200 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
-          >
-            <div className="card-body items-center text-center p-6">
-              <MdDirectionsCar className="text-4xl text-accent mb-2" />
-              <h3 className="card-title text-base">My Vehicle</h3>
-              <p className="text-sm text-base-content/60">Update vehicle info</p>
-            </div>
-          </Link>
-          <Link
-            href="/driver/profile"
-            className="card bg-base-100 border border-base-200 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
-          >
-            <div className="card-body items-center text-center p-6">
-              <MdLocationOn className="text-4xl text-success mb-2" />
-              <h3 className="card-title text-base">Profile</h3>
-              <p className="text-sm text-base-content/60">Edit your driver profile</p>
-            </div>
-          </Link>
+      {/* Safety Center */}
+      <div className="bg-base-200/60 rounded-2xl p-4 flex items-center gap-3 border border-base-200">
+        <div className="w-9 h-9 bg-base-100 rounded-full flex items-center justify-center text-primary shadow-sm shrink-0">
+          <MdShield className="text-lg" />
+        </div>
+        <div>
+          <p className="text-sm font-bold text-base-content">Safety Center</p>
+          <p className="text-xs text-base-content/50">Help and support is one tap away.</p>
         </div>
       </div>
+
+      {/* Live Incoming Requests (shown when online) */}
+      {isOnline && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="font-bold text-base-content">Incoming Requests</h4>
+            <span className="badge badge-primary badge-sm">{incomingRides.length}</span>
+          </div>
+          
+          {incomingRides.length > 0 ? (
+            incomingRides.map((ride) => (
+              <div
+                key={ride.id}
+                className="bg-base-100 border-2 border-primary/20 rounded-2xl p-4 shadow-sm"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="avatar placeholder">
+                      <div className="w-9 h-9 rounded-full bg-primary/10 text-primary font-bold text-sm">
+                        <span>{ride.passenger.name.charAt(0)}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm">{ride.passenger.name}</p>
+                      <p className="text-xs text-base-content/40">Requested now</p>
+                    </div>
+                  </div>
+                  <p className="font-bold text-success text-lg">PKR {Math.round(ride.fare)}</p>
+                </div>
+                <div className="space-y-1 mb-3 text-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
+                    <p className="text-base-content/70 truncate">{ride.pickupAddress}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MdLocationOn className="text-error shrink-0" />
+                    <p className="text-base-content/90 font-medium truncate">
+                      {ride.dropoffAddress}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => acceptRide(ride.id)}
+                  disabled={!!acceptingId}
+                  className={`btn btn-primary btn-sm w-full gap-2 ${
+                    acceptingId === ride.id ? "loading" : ""
+                  }`}
+                >
+                  {acceptingId === ride.id ? (
+                    "Accepting..."
+                  ) : (
+                    <>
+                      <MdCheck className="text-lg" /> Accept Ride
+                    </>
+                  )}
+                </button>
+              </div>
+            ))
+          ) : (
+            <div className="bg-base-200/40 rounded-2xl p-8 text-center border border-dashed border-base-300">
+              <div className="w-12 h-12 bg-base-100 rounded-full flex items-center justify-center mx-auto mb-3 text-base-content/20">
+                <MdDirectionsCar className="text-2xl" />
+              </div>
+              <p className="text-sm font-bold text-base-content/40">Searching for rides...</p>
+              <p className="text-[10px] text-base-content/30 mt-1">Stay active to receive new requests</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

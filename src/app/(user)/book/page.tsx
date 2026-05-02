@@ -8,6 +8,7 @@ import {
   MdElectricCar,
   MdArrowForward,
   MdGpsFixed,
+  MdInfo,
 } from "react-icons/md";
 import { FaMotorcycle } from "react-icons/fa6";
 import { useMapsLibrary, useMap } from "@vis.gl/react-google-maps";
@@ -219,143 +220,180 @@ export default function BookPage() {
   const vehicleIcon = (icon: string) => {
     switch (icon) {
       case "car": return <MdDirectionsCar />;
-      case "electric": return <MdElectricCar className="text-success" />;
-      case "moto": return <FaMotorcycle className="text-warning" />;
+      case "electric": return <MdElectricCar />;
+      case "moto": return <FaMotorcycle />;
       default: return <MdDirectionsCar />;
     }
   };
 
   const pacStyles = {
     "--pac-font-family": "inherit",
-    "--pac-font-size": "0.875rem",
+    "--pac-font-size": "1rem",
     "--pac-icon-display": "none",
     "--pac-border": "none",
     "--pac-box-shadow": "none",
-    "--pac-color": "var(--color-base-content)",
+    "--pac-color": "#111c2d",
     "--pac-container-background-color": "transparent",
     "--pac-padding": "0",
   } as React.CSSProperties;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-8 pb-12">
       <style>{`
         gmp-place-autocomplete::part(search-icon) { display: none !important; }
-        gmp-place-autocomplete::part(input) { padding-left: 0 !important; }
+        gmp-place-autocomplete::part(input) { 
+          padding-left: 0 !important; 
+          font-weight: 600;
+          color: #111c2d;
+        }
       `}</style>
 
-      <div>
-        <h1 className="text-2xl font-bold">Book a Ride</h1>
-        <p className="text-base-content/60 mt-1">Enter your pickup and destination</p>
+      <div className="text-center space-y-2">
+        <h1 className="text-[48px] font-bold tracking-tight text-[#111c2d]">Book a Ride</h1>
+        <p className="text-[18px] text-slate-500">Fast, secure, and reliable travel at your fingertips.</p>
       </div>
 
-      <div className="card bg-base-100 border border-base-200 shadow-sm relative overflow-visible">
-        <div className="card-body gap-5 p-4">
-          <div className="form-control">
-            <label className="label pb-1 px-1">
-              <span className="label-text font-semibold text-xs uppercase tracking-wider text-base-content/70">Pickup Location</span>
-            </label>
-            <div className="flex items-center gap-2 h-13">
-              <div className="flex items-center gap-3 bg-base-200/50 hover:bg-base-200 focus-within:bg-base-200 rounded-xl px-3 border border-base-200 relative grow h-full">
-                <div className="bg-primary/10 p-2 rounded-lg">
-                  <MdMyLocation className="text-primary text-xl" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* ── Left: Location Inputs ──────────────── */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="bg-white rounded-2xl p-6 shadow-[0_20px_40px_rgba(37,99,235,0.05)] border border-slate-50 space-y-6">
+            
+            {/* Pickup */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Pickup Location</label>
+              <div className="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-3 border border-slate-100 focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-600/5 transition-all">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                  <MdMyLocation className="text-lg" />
                 </div>
-                <div ref={pickupRef} className="grow w-full relative h-6 *:absolute *:-top-3 *:bg-transparent! *:w-full" style={pacStyles} />
-              </div>
-              <button type="button" onClick={handleRefreshLocation} disabled={isLocating} className="btn btn-square btn-ghost border border-base-200 rounded-xl h-full w-13 tooltip tooltip-bottom" data-tip="Refresh GPS">
-                {isLocating ? <span className="loading loading-spinner loading-xs" /> : <MdGpsFixed className="text-xl text-success" />}
-              </button>
-            </div>
-            {liveLocation?.address && liveLocation.address !== "Detecting address..." && (
-              <div className="flex items-center justify-between mt-1.5 pl-1">
-                <p className="text-xs text-base-content/50 flex items-center gap-1 truncate max-w-[80%]">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full inline-block animate-pulse shrink-0" />
-                  {liveLocation.address}
-                </p>
-                <button type="button" onClick={() => { setPickup(liveLocation); if (pickupAutocompleteRef.current) pickupAutocompleteRef.current.value = liveLocation.address; if (map) map.panTo({ lat: liveLocation.lat, lng: liveLocation.lng }); toast.success("Pickup set to live location"); }} className="text-[10px] font-bold text-primary hover:underline uppercase tracking-tight shrink-0">
-                  Use as Pickup
+                <div className="flex-1">
+                  <div ref={pickupRef} className="relative h-6 *:absolute *:-top-3 *:bg-transparent! *:w-full" style={pacStyles} />
+                </div>
+                <button onClick={handleRefreshLocation} disabled={isLocating} className="p-2 hover:bg-white rounded-lg transition-colors text-green-500">
+                  {isLocating ? <span className="loading loading-spinner loading-xs" /> : <MdGpsFixed className="text-lg" />}
                 </button>
+              </div>
+              {liveLocation?.address && liveLocation.address !== "Detecting address..." && (
+                <button onClick={() => { setPickup(liveLocation); if (pickupAutocompleteRef.current) pickupAutocompleteRef.current.value = liveLocation.address; if (map) map.panTo({ lat: liveLocation.lat, lng: liveLocation.lng }); toast.success("Pickup set to live location"); }} className="text-[11px] font-bold text-blue-600 px-1 hover:underline">
+                  Use current location
+                </button>
+              )}
+            </div>
+
+            {/* Dropoff */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Drop-off Destination</label>
+              <div className="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-3 border border-slate-100 focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-600/5 transition-all">
+                <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
+                  <MdLocationOn className="text-lg" />
+                </div>
+                <div className="flex-1">
+                  <div ref={dropoffRef} onBlur={() => handleManualGeocode("dropoff")} className="relative h-6 *:absolute *:-top-3 *:bg-transparent! *:w-full" style={pacStyles} />
+                </div>
+              </div>
+            </div>
+
+            {distance && duration && (
+              <div className="p-4 bg-blue-50 rounded-xl flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-blue-600 text-[20px]">distance</span>
+                  <span className="text-[14px] font-bold text-blue-700">{distance.toFixed(1)} km</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-400">
+                  <span className="material-symbols-outlined text-[20px]">schedule</span>
+                  <span className="text-[14px] font-bold">~{Math.round(duration)} mins</span>
+                </div>
               </div>
             )}
           </div>
 
-          <div className="form-control">
-            <label className="label pb-1 px-1">
-              <span className="label-text font-semibold text-xs uppercase tracking-wider text-base-content/70">Drop-off Location</span>
-            </label>
-            <div className="flex items-center gap-3 bg-base-200/50 hover:bg-base-200 rounded-xl px-3 border border-base-200 h-13">
-              <div className="bg-error/10 p-2 rounded-lg">
-                <MdLocationOn className="text-error text-xl" />
-              </div>
-              <div ref={dropoffRef} onBlur={() => handleManualGeocode("dropoff")} className="grow w-full relative h-6 *:absolute *:-top-3 *:bg-transparent! *:w-full" style={pacStyles} />
+          <div className="bg-[#e7eeff] p-6 rounded-2xl flex gap-4">
+            <MdInfo className="text-blue-600 text-2xl shrink-0 mt-1" />
+            <div>
+              <h4 className="text-[14px] font-bold text-blue-700 mb-1">Travel Tip</h4>
+              <p className="text-[12px] text-[#54647a] leading-relaxed">
+                Save your home and work addresses in <span className="font-bold underline cursor-pointer" onClick={() => router.push('/saved-places')}>Saved Places</span> for even faster bookings next time.
+              </p>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="rounded-2xl border border-base-200 bg-base-200/50 h-80 flex items-center justify-center relative overflow-hidden">
-        <BookRide />
-      </div>
-
-      {distance && duration && (
-        <div className="flex items-center gap-4 px-1">
-          <div className="badge badge-primary badge-outline gap-1">{distance.toFixed(1)} km</div>
-          <div className="badge badge-ghost gap-1">~{Math.round(duration)} min</div>
-        </div>
-      )}
-
-      <div>
-        <h2 className="text-base font-semibold mb-3">Choose Your Ride</h2>
-        {!dropoff ? (
-          <div className="text-center py-10 bg-base-200/30 rounded-2xl border border-dashed border-base-300">
-            <p className="text-base-content/40 text-sm">Select locations to see fare estimates</p>
+        {/* ── Right: Map & Vehicle Selection ──────── */}
+        <div className="lg:col-span-7 space-y-6">
+          <div className="bg-white rounded-2xl overflow-hidden shadow-[0_20px_40px_rgba(37,99,235,0.05)] border border-slate-50 h-[350px] relative">
+            <BookRide />
           </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-2.5">
-            {VEHICLES.map((v) => {
-              const vFare = distance ? computeFare(v.id, distance) : null;
-              const isSelected = selectedVehicle === v.id;
-              return (
-                <div key={v.id} onClick={() => setSelectedVehicle(v.id)} className={`relative group cursor-pointer transition-all duration-300 ${isSelected ? "scale-[1.01]" : "hover:scale-[1.005]"}`}>
-                  <div className={`card border-2 transition-all duration-300 shadow-sm ${isSelected ? "border-primary bg-primary/5 ring-1 ring-primary/20" : "border-base-200 bg-base-100 hover:border-base-300"}`}>
-                    <div className="card-body flex-row items-center gap-4 py-3.5 px-4">
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl transition-colors duration-300 ${isSelected ? "bg-primary text-white" : "bg-base-200 text-base-content/70 group-hover:bg-base-300"}`}>
+
+          <div className="space-y-4">
+            <h3 className="text-[18px] font-bold text-[#111c2d] px-1">Choose Your Vehicle</h3>
+            
+            {!dropoff ? (
+              <div className="bg-white border-2 border-dashed border-slate-100 rounded-2xl p-12 text-center">
+                <MdDirectionsCar className="text-5xl text-slate-100 mx-auto mb-3" />
+                <p className="text-slate-400 font-medium">Select a destination to see fares</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-3">
+                {VEHICLES.map((v) => {
+                  const vFare = distance ? computeFare(v.id, distance) : null;
+                  const isSelected = selectedVehicle === v.id;
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => setSelectedVehicle(v.id)}
+                      className={`relative flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left ${
+                        isSelected 
+                          ? "border-blue-600 bg-blue-50/50 shadow-lg shadow-blue-600/5" 
+                          : "border-slate-50 bg-white hover:border-blue-100"
+                      }`}
+                    >
+                      <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-3xl transition-colors ${
+                        isSelected ? "bg-blue-600 text-white" : "bg-slate-50 text-slate-400"
+                      }`}>
                         {vehicleIcon(v.icon)}
                       </div>
+                      
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-bold text-sm tracking-tight">{v.label}</p>
-                          {v.id === "comfort" && <span className="badge badge-xs badge-success text-[8px] font-bold">TOP RATED</span>}
+                          <span className="text-[16px] font-bold text-[#111c2d]">{v.label}</span>
+                          {v.id === "comfort" && <span className="bg-green-100 text-green-700 text-[10px] font-black px-2 py-0.5 rounded-full">TOP RATED</span>}
                         </div>
-                        <p className="text-[11px] text-base-content/60 truncate">{v.description} • {v.eta}</p>
+                        <p className="text-[12px] text-slate-400 truncate">{v.description} · {v.eta}</p>
                       </div>
-                      <div className="text-right shrink-0">
+
+                      <div className="text-right">
                         {vFare ? (
-                          <div className="flex flex-col items-end">
-                            <span className="text-xs text-base-content/40 font-medium leading-none mb-1">Total PKR</span>
-                            <span className="text-lg font-black text-primary leading-none">{vFare.total.toLocaleString()}</span>
-                          </div>
+                          <>
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Total</p>
+                            <p className="text-[20px] font-black text-blue-600 leading-none mt-1">PKR {vFare.total.toLocaleString()}</p>
+                          </>
                         ) : (
-                          <span className="loading loading-dots loading-xs text-base-content/20" />
+                          <span className="loading loading-dots loading-sm text-blue-200" />
                         )}
                       </div>
-                    </div>
-                  </div>
-                  {isSelected && (
-                    <div className="absolute -right-1 -top-1 w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center shadow-lg border-2 border-base-100 animate-in zoom-in-50 duration-300">
-                      <MdArrowForward className="text-[10px] -rotate-45" />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
 
-      <button disabled={!selectedVehicle || !pickup || !dropoff} onClick={handleBookingTransition} className="btn btn-primary btn-block gap-2 shadow-md">
-        {fare ? `Confirm ${selectedVehicle === "moto" ? "Motorbike" : selectedVehicle === "comfort" ? "Comfort" : "Economy"} — Rs ${fare.total}` : "Confirm Booking"}
-        <MdArrowForward className="text-lg" />
-      </button>
+                      {isSelected && (
+                        <div className="absolute -right-2 -top-2 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                          <MdArrowForward className="text-sm" />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <button
+            disabled={!selectedVehicle || !pickup || !dropoff || !distance}
+            onClick={handleBookingTransition}
+            className="w-full py-5 bg-blue-600 text-white font-bold text-[18px] rounded-2xl shadow-xl shadow-blue-600/30 hover:shadow-blue-600/40 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {fare ? `Book ${selectedVehicle?.charAt(0).toUpperCase()}${selectedVehicle?.slice(1)} • PKR ${Math.round(fare.total).toLocaleString()}` : "Confirm Booking"}
+            <MdArrowForward className="text-2xl" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

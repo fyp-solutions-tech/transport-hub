@@ -125,7 +125,7 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
                   <span className="label-text font-medium">Base Fare (Economy)</span>
                 </label>
                 <label className="input input-bordered flex items-center pr-0">
-                  <span className="text-base-content/50 mr-2">৳</span>
+                  <span className="text-base-content/50 mr-2">PKR</span>
                   <input 
                     name="baseFare" 
                     type="number" 
@@ -141,7 +141,7 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
                   <span className="label-text font-medium">Per Km Rate (Economy)</span>
                 </label>
                 <label className="input input-bordered flex items-center pr-0">
-                  <span className="text-base-content/50 mr-2">৳</span>
+                  <span className="text-base-content/50 mr-2">PKR</span>
                   <input 
                     name="perKmRate" 
                     type="number" 

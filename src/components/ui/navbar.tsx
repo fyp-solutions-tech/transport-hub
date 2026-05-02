@@ -20,7 +20,7 @@ const Navbar = () => {
           </ul>
         </div>
         <Link href="/" className="text-2xl font-black tracking-tight text-primary btn btn-ghost">
-        <Image src="/logo.jpg" alt="TransportHub" width={40} height={40} />
+        <Image src="/logo.png" alt="TransportHub" width={130} height={130} />
         </Link>
       </div>
       <div className="navbar-center hidden lg:flex">
@@ -34,7 +34,7 @@ const Navbar = () => {
       </div>
       <div className="navbar-end gap-3 px-3">
         <Link className="btn btn-wide max-w-24 btn-ghost rounded-full" href="/auth/login">Sign In</Link>
-        <Link className="btn btn-wide max-w-24 btn-primary rounded-full" href="/auth/register">Join</Link>
+        <Link className="btn btn-wide max-w-24 btn-primary rounded-full" href="/auth/signup">Join</Link>
       </div>
     </nav>
   );

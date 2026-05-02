@@ -51,7 +51,7 @@ export default async function DriverRidePage({ params }: PageProps) {
           </div>
           <div className="flex-1">
             <p className="font-semibold">Razia Sultana</p>
-            <p className="text-sm text-base-content/60">Passenger · ৳87 (Cash)</p>
+            <p className="text-sm text-base-content/60">Passenger · PKR 87 (Cash)</p>
           </div>
           <a href="tel:+880123456789" className="btn btn-circle btn-accent btn-sm">
             <MdPhone className="text-base" />

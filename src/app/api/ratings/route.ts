@@ -74,7 +74,7 @@ export async function GET() {
       riderName: userMap.get(ride.passengerId) ?? 'Passenger',
       pickup: ride.pickupAddress,
       dropoff: ride.dropoffAddress,
-      fare: `৳${ride.fare ?? 0}`,
+      fare: `PKR ${Math.round(ride.fare ?? 0)}`,
       createdAt: ride.createdAt.toISOString(),
     }))
 

@@ -36,7 +36,7 @@ export async function GET() {
       id: ride.id,
       riderName: userMap.get(ride.passengerId) ?? 'Passenger',
       date: ride.createdAt.toISOString().split('T')[0],
-      fare: `৳${ride.fare ?? 0}`,
+      fare: `PKR ${Math.round(ride.fare ?? 0)}`,
     }))
     
     return NextResponse.json({ rides: pendingRides })

@@ -20,7 +20,7 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const rides = await prisma.ride.findMany({
+    const rides = await prisma.Ride.findMany({
       where: { passengerId: session.user.id },
       select: { fare: true, rating: true, status: true },
     });

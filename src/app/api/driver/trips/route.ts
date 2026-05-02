@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       where.status = filter;
     }
 
-    const trips = await prisma.ride.findMany({
+    const trips = await prisma.Ride.findMany({
       where,
       include: {
         passenger: {

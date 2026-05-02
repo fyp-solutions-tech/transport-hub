@@ -30,7 +30,7 @@ export default async function DriverRatingsPage() {
       categories: ['punctuality', 'cleanliness'],
       pickup: 'Central Station',
       dropoff: 'Algora Mall',
-      fare: '৳450',
+      fare: 'PKR 450',
       date: '2026-04-25',
     },
     {
@@ -41,7 +41,7 @@ export default async function DriverRatingsPage() {
       categories: ['driving'],
       pickup: 'City Center',
       dropoff: 'Airport',
-      fare: '৳850',
+      fare: 'PKR 850',
       date: '2026-04-24',
     },
   ]

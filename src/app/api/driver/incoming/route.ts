@@ -23,11 +23,11 @@ export async function GET() {
     }
 
     // Fetch rides that are PENDING and match driver's vehicle type
-    const rides = await prisma.ride.findMany({
+    const rides = await prisma.Ride.findMany({
       where: {
         status: "PENDING",
         vehicleType: driver.vehicleType || undefined,
-        driverId: null, // ensure it's not already picked up (though status PENDING implies this)
+        driverId: null, // ensure it's not already picked up
       },
       include: {
         passenger: {

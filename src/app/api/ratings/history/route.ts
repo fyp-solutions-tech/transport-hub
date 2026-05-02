@@ -29,7 +29,7 @@ export async function GET() {
       driverName: session.user.name,
       pickup: ride.pickupAddress,
       dropoff: ride.dropoffAddress,
-      fare: `৳${ride.fare ?? 0}`,
+      fare: `PKR ${Math.round(ride.fare ?? 0)}`,
       createdAt: ride.createdAt.toISOString(),
     }))
 

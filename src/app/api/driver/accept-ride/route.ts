@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const driverId = session.user.id;
 
     // Atomically claim the ride to prevent two drivers accepting at once.
-    const claim = await prisma.ride.updateMany({
+    const claim = await prisma.Ride.updateMany({
       where: { id: rideId, status: "PENDING", driverId: null },
       data: {
         driverId,
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Ride is no longer available" }, { status: 409 });
     }
 
-    const updatedRide = await prisma.ride.findUnique({ where: { id: rideId } });
+    const updatedRide = await prisma.Ride.findUnique({ where: { id: rideId } });
 
     return NextResponse.json({ success: true, ride: updatedRide });
   } catch (error: unknown) {

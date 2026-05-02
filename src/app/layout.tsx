@@ -26,7 +26,7 @@ export default function RootLayout({
       className={`${plus_jakarta_sans.className} h-full antialiased`}
       data-theme="stitch"
     >
-      <body className="bg-base-100 text-base-content min-h-screen flex flex-col pt-20 pb-16 md:pb-0 ">
+      <body className="bg-base-100 text-base-content min-h-screen flex flex-col">
         <RideTrackerProvider>
           {children}
           <Toaster

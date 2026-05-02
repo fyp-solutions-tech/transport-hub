@@ -78,7 +78,7 @@ export default async function AdminDashboardPage() {
     },
     { 
       label: "Revenue Today", 
-      value: `৳${(revenueData._sum.fare || 0).toLocaleString()}`, 
+      value: `PKR ${Math.round(revenueData._sum.fare || 0).toLocaleString()}`, 
       sub: "platform earnings", 
       icon: <MdAttachMoney className="text-secondary text-2xl" />, 
       color: "bg-secondary/10" 
@@ -87,7 +87,7 @@ export default async function AdminDashboardPage() {
 
   const recentActivity = [
     ...recentRides.map(r => ({
-      text: `Ride #${r.id.slice(-4)} ${r.status.toLowerCase()} — ৳${r.fare || 0}`,
+      text: `Ride #${r.id.slice(-4)} ${r.status.toLowerCase()} — PKR ${Math.round(r.fare || 0)}`,
       time: new Date(r.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       dot: r.status === "COMPLETED" ? "bg-success" : r.status === "CANCELLED" ? "bg-error" : "bg-warning"
     })),

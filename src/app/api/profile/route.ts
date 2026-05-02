@@ -20,8 +20,7 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // FIX 1: 'ride' → 'rides' (your schema uses plural)
-    const rides = await prisma.rides.findMany({
+    const rides = await prisma.Ride.findMany({
       where: { passengerId: session.user.id },
       select: { fare: true, rating: true, status: true },
     });

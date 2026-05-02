@@ -15,8 +15,8 @@ export const auth = betterAuth({
     },
     socialProviders: {
         google: {
-            clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
-            clientSecret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET as string,
+            clientId: process.env.GOOGLE_CLIENT_ID as string,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
             accessType: "offline",
             prompt: "select_account consent",
         },
@@ -28,6 +28,69 @@ export const auth = betterAuth({
                 required: false,
                 defaultValue: "USER",
                 input: true
+            },
+            isOnline: {
+                type: "boolean",
+                required: false,
+                defaultValue: false,
+                input: true
+            },
+            vehicleType: {
+                type: "string",
+                required: false,
+                input: true
+            },
+            vehicleMake: {
+                type: "string",
+                required: false,
+                input: true
+            },
+            vehicleModel: {
+                type: "string",
+                required: false,
+                input: true
+            },
+            vehicleYear: {
+                type: "string",
+                required: false,
+                input: true
+            },
+            vehicleColor: {
+                type: "string",
+                required: false,
+                input: true
+            },
+            vehiclePlate: {
+                type: "string",
+                required: false,
+                input: true
+            },
+            rating: {
+                type: "number",
+                required: false,
+                input: false
+            },
+            totalEarnings: {
+                type: "number",
+                required: false,
+                defaultValue: 0,
+                input: false
+            },
+            totalTrips: {
+                type: "number",
+                required: false,
+                defaultValue: 0,
+                input: false
+            },
+            lastLat: {
+                type: "number",
+                required: false,
+                input: false
+            },
+            lastLng: {
+                type: "number",
+                required: false,
+                input: false
             }
         }
     },

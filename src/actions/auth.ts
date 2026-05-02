@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { auth } from "@/lib/auth";       
+import { auth } from "@/lib/auth";
 
 const signUpSchema = z
     .object({

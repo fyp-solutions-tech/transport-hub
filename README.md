@@ -80,14 +80,14 @@ cp .example.env .env.local
 ```
 
 ```env
-NEXT_PUBLIC_DATABASE_URL=""          # Your PostgreSQL connection string
+DATABASE_URL=""          # Your PostgreSQL connection string
 BETTER_AUTH_SECRET=""                # A random secret for auth sessions
 NEXT_PUBLIC_BETTER_AUTH_URL=""       # Base URL of your app (e.g. http://localhost:3000)
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=""      # Google OAuth client ID
-NEXT_PUBLIC_GOOGLE_CLIENT_SECRET=""  # Google OAuth client secret
-NEXT_PUBLIC_AUTH_PROXY_ENABLED=""    # Set to "true" if using an auth proxy
-NEXT_PUBLIC_EMAIL_FROM=""            # Sender email address (e.g. noreply@yourdomain.com)
-NEXT_PUBLIC_RESEND_API_KEY=""        # Your Resend API key
+GOOGLE_CLIENT_ID=""      # Google OAuth client ID
+GOOGLE_CLIENT_SECRET=""  # Google OAuth client secret
+AUTH_PROXY_ENABLED=""    # Set to "true" if using an auth proxy
+EMAIL_FROM=""            # Sender email address (e.g. noreply@yourdomain.com)
+RESEND_API_KEY=""        # Your Resend API key
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=""   # Your Google Maps API key
 ```
 
@@ -131,14 +131,14 @@ transport-hub/
 
 | Variable | Description |
 |---|---|
-| `NEXT_PUBLIC_DATABASE_URL` | PostgreSQL connection string |
+| `DATABASE_URL` | PostgreSQL connection string |
 | `BETTER_AUTH_SECRET` | Secret key for auth token signing |
 | `NEXT_PUBLIC_BETTER_AUTH_URL` | Deployed app base URL |
-| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Google OAuth App Client ID |
-| `NEXT_PUBLIC_GOOGLE_CLIENT_SECRET` | Google OAuth App Client Secret |
-| `NEXT_PUBLIC_AUTH_PROXY_ENABLED` | Enable auth proxy (`true`/`false`) |
-| `NEXT_PUBLIC_EMAIL_FROM` | Email sender address |
-| `NEXT_PUBLIC_RESEND_API_KEY` | Resend API key for emails |
+| `GOOGLE_CLIENT_ID` | Google OAuth App Client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth App Client Secret |
+| `AUTH_PROXY_ENABLED` | Enable auth proxy (`true`/`false`) |
+| `EMAIL_FROM` | Email sender address |
+| `RESEND_API_KEY` | Resend API key for emails |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Google Maps JavaScript API key |
 
 ---

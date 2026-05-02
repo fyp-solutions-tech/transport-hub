@@ -2,6 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
+import { z } from "zod";
+
+const bookingSchema = z.object({
+  pickupLat: z.coerce.number().finite(),
+  pickupLng: z.coerce.number().finite(),
+  pickupAddress: z.string().trim().min(1),
+  dropoffLat: z.coerce.number().finite(),
+  dropoffLng: z.coerce.number().finite(),
+  dropoffAddress: z.string().trim().min(1),
+  vehicleType: z.enum(["economy", "comfort", "moto"]),
+  distanceKm: z.coerce.number().finite().nonnegative().optional(),
+  durationMin: z.coerce.number().finite().nonnegative().optional(),
+  fare: z.coerce.number().finite().nonnegative(),
+  paymentMethod: z.enum(["cash", "loan", "card"]).optional(),
+  loanAmount: z.coerce.number().finite().nonnegative().optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +34,13 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Parse & validate body ─────────────────────────
-    const body = await request.json();
+    const parsedBody = bookingSchema.safeParse(await request.json());
+    if (!parsedBody.success) {
+      return NextResponse.json(
+        { error: "Invalid booking payload.", details: parsedBody.error.flatten() },
+        { status: 400 }
+      );
+    }
     const {
       pickupLat,
       pickupLng,
@@ -32,53 +54,26 @@ export async function POST(request: NextRequest) {
       fare,
       paymentMethod,
       loanAmount,
-    } = body;
-
-    // Required field validation
-    if (
-      pickupLat == null ||
-      pickupLng == null ||
-      !pickupAddress ||
-      dropoffLat == null ||
-      dropoffLng == null ||
-      !dropoffAddress ||
-      !vehicleType ||
-      fare == null
-    ) {
-      return NextResponse.json(
-        { error: "Missing required booking fields." },
-        { status: 400 }
-      );
-    }
-
-    // Validate vehicle type
-    const validVehicles = ["economy", "comfort", "moto"];
-    if (!validVehicles.includes(vehicleType)) {
-      return NextResponse.json(
-        { error: "Invalid vehicle type." },
-        { status: 400 }
-      );
-    }
+    } = parsedBody.data;
 
     // ── Create ride in database ───────────────────────
-    const ride = await prisma.rides.create({
+    const ride = await prisma.ride.create({
       data: {
         passengerId: session.user.id,
-        pickupLat: parseFloat(pickupLat),
-        pickupLng: parseFloat(pickupLng),
-        pickupAddress: String(pickupAddress),
-        dropoffLat: parseFloat(dropoffLat),
-        dropoffLng: parseFloat(dropoffLng),
-        dropoffAddress: String(dropoffAddress),
-        vehicleType: String(vehicleType),
-        distanceKm: distanceKm ? parseFloat(distanceKm) : null,
-        durationMin: durationMin ? parseFloat(durationMin) : null,
-        fare: parseFloat(fare),
+        pickupLat,
+        pickupLng,
+        pickupAddress,
+        dropoffLat,
+        dropoffLng,
+        dropoffAddress,
+        vehicleType,
+        distanceKm: distanceKm ?? null,
+        durationMin: durationMin ?? null,
+        fare,
         status: "PENDING",
-        paymentMethod: paymentMethod ? String(paymentMethod) : "cash",
-        loanAmount: loanAmount ? parseFloat(loanAmount) : 0,
-        updatedAt: new Date(),  // Add this line
-      } as any,  // Add type assertion
+        paymentMethod: paymentMethod ?? "cash",
+        loanAmount: loanAmount ?? 0,
+      },
     });
 
     return NextResponse.json(

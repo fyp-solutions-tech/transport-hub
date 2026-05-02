@@ -18,7 +18,7 @@ export default async function AdminRidesPage() {
     driver: r.driver?.name || "Searching...",
     from: r.pickupAddress,
     to: r.dropoffAddress,
-    fare: `৳${r.fare || 0}`,
+    fare: `PKR ${Math.round(r.fare || 0)}`,
     status: r.status.toLowerCase()
   }));
 

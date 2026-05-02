@@ -2,6 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
+import { z } from "zod";
+
+const patchSchema = z.object({
+  rating: z.coerce.number().min(1).max(5).optional(),
+  status: z
+    .enum([
+      "PENDING",
+      "SEARCHING",
+      "ACCEPTED",
+      "ARRIVING",
+      "IN_PROGRESS",
+      "COMPLETED",
+      "CANCELLED",
+    ])
+    .optional(),
+  paymentMethod: z.enum(["cash", "loan", "card"]).optional(),
+  loanAmount: z.coerce.number().finite().nonnegative().optional(),
+});
 
 export async function GET(
   _request: NextRequest,
@@ -14,7 +32,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const ride = await prisma.rides.findUnique({ where: { id } });
+    const ride = await prisma.ride.findUnique({ where: { id } });
     if (!ride || ride.passengerId !== session.user.id) {
       return NextResponse.json({ error: "Ride not found" }, { status: 404 });
     }
@@ -37,17 +55,40 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { rating, status, paymentMethod, loanAmount } = body;
+    const existingRide = await prisma.ride.findUnique({ where: { id } });
+    if (!existingRide) {
+      return NextResponse.json({ error: "Ride not found" }, { status: 404 });
+    }
+
+    const isOwner =
+      existingRide.passengerId === session.user.id ||
+      existingRide.driverId === session.user.id ||
+      session.user.role === "ADMIN";
+    if (!isOwner) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const parsedBody = patchSchema.safeParse(await request.json());
+    if (!parsedBody.success) {
+      return NextResponse.json(
+        { error: "Invalid update payload", details: parsedBody.error.flatten() },
+        { status: 400 }
+      );
+    }
+    const { rating, status, paymentMethod, loanAmount } = parsedBody.data;
 
     // Build update data
     const updateData: Record<string, unknown> = {};
-    if (rating !== undefined) updateData.rating = parseFloat(rating);
+    if (rating !== undefined) updateData.rating = rating;
     if (status !== undefined) updateData.status = status;
     if (paymentMethod !== undefined) updateData.paymentMethod = paymentMethod;
-    if (loanAmount !== undefined) updateData.loanAmount = parseFloat(loanAmount);
+    if (loanAmount !== undefined) updateData.loanAmount = loanAmount;
 
-    const ride = await prisma.rides.update({
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: "No valid fields to update." }, { status: 400 });
+    }
+
+    const ride = await prisma.ride.update({
       where: { id },
       data: updateData,
     });

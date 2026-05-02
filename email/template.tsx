@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface SendEmailOptions {
     to: string;
@@ -11,7 +11,7 @@ interface SendEmailOptions {
 
 export const sendEmail = async ({ to, subject, text, html }: SendEmailOptions) => {
     const { data, error } = await resend.emails.send({
-        from: process.env.NEXT_PUBLIC_EMAIL_FROM || "onboarding@resend.dev",
+        from: process.env.EMAIL_FROM || "onboarding@resend.dev",
         to,
         subject,
         text: text || "",

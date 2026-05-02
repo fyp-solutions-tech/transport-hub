@@ -41,28 +41,30 @@ model account {
   @@index([userId])
 }
 
-model rides {
-  id                           String     @id
-  passengerId                  String
-  driverId                     String?
-  pickupLat                    Float
-  pickupLng                    Float
-  pickupAddress                String
-  dropoffLat                   Float
-  dropoffLng                   Float
-  dropoffAddress               String
-  distanceKm                   Float?
-  durationMin                  Float?
-  fare                         Float?
-  status                       RideStatus @default(PENDING)
-  vehicleType                  String?
-  rating                       Float?
-  paymentMethod                String?    @default("cash")
-  loanAmount                   Float?     @default(0)
-  createdAt                    DateTime   @default(now())
-  updatedAt                    DateTime
-  user_rides_driverIdTouser    user?      @relation("rides_driverIdTouser", fields: [driverId], references: [id])
-  user_rides_passengerIdTouser user       @relation("rides_passengerIdTouser", fields: [passengerId], references: [id])
+model Ride {
+  id               String     @id @default(cuid())
+  passengerId      String
+  driverId         String?
+  pickupLat        Float
+  pickupLng        Float
+  pickupAddress    String
+  dropoffLat       Float
+  dropoffLng       Float
+  dropoffAddress   String
+  distanceKm       Float?
+  durationMin      Float?
+  fare             Float?
+  status           RideStatus @default(PENDING)
+  vehicleType      String?
+  rating           Float?
+  paymentMethod    String?    @default("cash")
+  loanAmount       Float?     @default(0)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  driver           user?      @relation("rides_driverIdTouser", fields: [driverId], references: [id])
+  passenger        user       @relation("rides_passengerIdTouser", fields: [passengerId], references: [id])
+
+  @@map("rides")
 }
 
 model session {
@@ -86,12 +88,41 @@ model user {
   emailVerified                 Boolean   @default(false)
   image                         String?
   role                          Role      @default(USER)
+  phone                         String?
+  phoneNumber                   String?
+  isOnline                      Boolean   @default(false)
+  vehicleType                   String?
+  vehicleMake                   String?
+  vehicleModel                  String?
+  vehicleYear                   String?
+  vehicleColor                  String?
+  vehiclePlate                  String?
+  rating                        Float?
+  totalEarnings                 Float     @default(0)
+  totalTrips                    Int       @default(0)
+  lastLat                       Float?
+  lastLng                       Float?
   createdAt                     DateTime  @default(now())
-  updatedAt                     DateTime
+  updatedAt                     DateTime  @updatedAt
   account                       account[]
-  rides_rides_driverIdTouser    rides[]   @relation("rides_driverIdTouser")
-  rides_rides_passengerIdTouser rides[]   @relation("rides_passengerIdTouser")
+  rides_driver                  Ride[]    @relation("rides_driverIdTouser")
+  rides_passenger               Ride[]    @relation("rides_passengerIdTouser")
   session                       session[]
+  vehicle                       Vehicle?
+}
+
+model Vehicle {
+  id          String   @id @default(cuid())
+  make        String
+  model       String
+  year        Int
+  plateNumber String   @unique
+  color       String
+  type        String   // economy, luxury, bike
+  ownerId     String   @unique
+  owner       user     @relation(fields: [ownerId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model verification {

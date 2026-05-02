@@ -33,6 +33,13 @@ export default async function OnboardingPage({
     });
   }
 
-  // Always redirect to dashboard after role is set
+  // Determine final role for redirect
+  const finalRole = (intendedRole === "DRIVER" && currentRole === "USER") ? "DRIVER" : currentRole;
+
+  // Always redirect to respective dashboard after role is set
+  if (finalRole === "DRIVER") {
+    redirect("/driver/dashboard");
+  }
+  
   redirect("/dashboard");
 }

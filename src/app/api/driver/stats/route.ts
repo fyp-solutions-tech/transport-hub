@@ -15,7 +15,7 @@ export async function GET() {
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     // Aggregate stats
-    const rides = await prisma.ride.findMany({
+    const rides = await prisma.Ride.findMany({
       where: { driverId },
       select: { fare: true, rating: true, status: true, createdAt: true },
     });
@@ -31,17 +31,33 @@ export async function GET() {
     const ratings = completedRides.filter((r) => r.rating != null).map((r) => r.rating!);
     const avgRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
 
-    // Acceptance rate (mocked for now or calculated if we had a PENDING_ACCEPTED history)
-    // For now let's just return a realistic mock or 100%
-    const acceptanceRate = totalTrips > 0 ? "98%" : "—";
+    // Acceptance rate: Number of ACCEPTED/COMPLETED rides vs Total assigned rides
+    const assignedRides = rides.length;
+    const acceptedRides = rides.filter(r => r.status !== "CANCELLED").length;
+    const acceptanceRate = assignedRides > 0 ? `${Math.round((acceptedRides / assignedRides) * 100)}%` : "100%";
+
+    // Get current active ride
+    const currentRide = await prisma.Ride.findFirst({
+      where: {
+        driverId,
+        status: { in: ["ACCEPTED", "ARRIVING", "IN_PROGRESS"] },
+      },
+      include: {
+        passenger: {
+          select: { name: true, image: true, rating: true },
+        },
+      },
+      orderBy: { updatedAt: "desc" },
+    });
 
     return NextResponse.json({
-      todayEarnings: `৳${todayEarnings}`,
+      todayEarnings: `PKR ${Math.round(todayEarnings)}`,
       todayTrips: todayCount.toString(),
       acceptanceRate,
       totalTrips: totalTrips.toString(),
-      totalEarnings: `৳${totalEarnings}`,
+      totalEarnings: `PKR ${Math.round(totalEarnings)}`,
       avgRating: avgRating > 0 ? avgRating.toFixed(1) : "—",
+      currentRide,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal server error";

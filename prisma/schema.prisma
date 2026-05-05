@@ -6,134 +6,10 @@ datasource db {
   provider = "postgresql"
 }
 
-model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  type      String
-  title     String
-  message   String
-  data      Json?    @default("{}")
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([userId, read])
-  @@index([createdAt])
-}
-
-model account {
-  id                    String    @id
-  accountId             String
-  providerId            String
-  userId                String
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime
-  user                  user      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model Ride {
-  id               String     @id @default(cuid())
-  passengerId      String
-  driverId         String?
-  pickupLat        Float
-  pickupLng        Float
-  pickupAddress    String
-  dropoffLat       Float
-  dropoffLng       Float
-  dropoffAddress   String
-  distanceKm       Float?
-  durationMin      Float?
-  fare             Float?
-  status           RideStatus @default(PENDING)
-  vehicleType      String?
-  rating           Float?
-  paymentMethod    String?    @default("cash")
-  loanAmount       Float?     @default(0)
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
-  driver           user?      @relation("rides_driverIdTouser", fields: [driverId], references: [id])
-  passenger        user       @relation("rides_passengerIdTouser", fields: [passengerId], references: [id])
-
-  @@map("rides")
-}
-
-model session {
-  id        String   @id
-  expiresAt DateTime
-  token     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model user {
-  id                            String    @id
-  name                          String
-  email                         String    @unique
-  emailVerified                 Boolean   @default(false)
-  image                         String?
-  role                          Role      @default(USER)
-  phone                         String?
-  phoneNumber                   String?
-  isOnline                      Boolean   @default(false)
-  vehicleType                   String?
-  vehicleMake                   String?
-  vehicleModel                  String?
-  vehicleYear                   String?
-  vehicleColor                  String?
-  vehiclePlate                  String?
-  rating                        Float?
-  totalEarnings                 Float     @default(0)
-  totalTrips                    Int       @default(0)
-  lastLat                       Float?
-  lastLng                       Float?
-  createdAt                     DateTime  @default(now())
-  updatedAt                     DateTime  @updatedAt
-  account                       account[]
-  rides_driver                  Ride[]    @relation("rides_driverIdTouser")
-  rides_passenger               Ride[]    @relation("rides_passengerIdTouser")
-  session                       session[]
-  vehicle                       Vehicle?
-}
-
-model Vehicle {
-  id          String   @id @default(cuid())
-  make        String
-  model       String
-  year        Int
-  plateNumber String   @unique
-  color       String
-  type        String   // economy, luxury, bike
-  ownerId     String   @unique
-  owner       user     @relation(fields: [ownerId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model verification {
-  id         String   @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime
-
-  @@index([identifier])
+enum Role {
+  USER
+  DRIVER
+  ADMIN
 }
 
 enum RideStatus {
@@ -146,8 +22,355 @@ enum RideStatus {
   CANCELLED
 }
 
-enum Role {
-  USER
-  DRIVER
-  ADMIN
+enum PaymentMethod {
+  CASH
+  LOAN
+  DEBIT_CARD
+  WALLET
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIAL
+}
+
+enum TransactionType {
+  RIDE_FARE
+  REFUND
+  TOP_UP
+  LOAN
+  REPAYMENT
+  ADJUSTMENT
+}
+
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum SupportTicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum PlaceType {
+  HOME
+  WORK
+  OTHER
+}
+
+model User {
+  id            String  @id
+  name          String
+  email         String  @unique
+  emailVerified Boolean @default(false)
+  image         String?
+  role          Role    @default(USER)
+
+  phone       String?
+  phoneNumber String?
+
+  isOnline Boolean @default(false)
+
+  vehicleType  String?
+  vehicleMake  String?
+  vehicleModel String?
+  vehicleYear  String?
+  vehicleColor String?
+  vehiclePlate String?
+
+  rating        Float?  @default(0)
+  totalEarnings Decimal @default(0) @db.Decimal(12, 2)
+  totalTrips    Int     @default(0)
+
+  lastLat Float?
+  lastLng Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts              Account[]
+  sessions              Session[]
+  ridesAsDriver         Ride[]                 @relation("ride_driver")
+  ridesAsPassenger      Ride[]                 @relation("ride_passenger")
+  vehicle               Vehicle?
+  savedPlaces           SavedPlace[]
+  wallet                Wallet?
+  transactions          PaymentTransaction[]
+  supportTickets        SupportTicket[]
+  supportAssignments    SupportTicket[]        @relation("support_assigned_to")
+  reviewsGiven          RideReview[]           @relation("reviews_given")
+  reviewsReceived       RideReview[]           @relation("reviews_received")
+  supportTicketMessages SupportTicketMessage[]
+  notifications         Notification[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([providerId, accountId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Vehicle {
+  id          String @id @default(cuid())
+  make        String
+  model       String
+  year        Int
+  plateNumber String @unique
+  color       String
+  type        String
+
+  ownerId String @unique
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("vehicles")
+}
+
+model Ride {
+  id          String  @id @default(cuid())
+  passengerId String
+  driverId    String?
+
+  pickupLat     Float
+  pickupLng     Float
+  pickupAddress String
+
+  dropoffLat     Float
+  dropoffLng     Float
+  dropoffAddress String
+
+  distanceKm  Float?
+  durationMin Int?
+  fare        Decimal? @db.Decimal(12, 2)
+  tip         Decimal? @default(0) @db.Decimal(12, 2)
+  loanAmount  Decimal? @default(0) @db.Decimal(12, 2)
+
+  currency      String        @default("PKR")
+  status        RideStatus    @default(PENDING)
+  vehicleType   String?
+  paymentMethod PaymentMethod @default(CASH)
+
+  rating             Float?
+  passengerNote      String?
+  driverNote         String?
+  cancellationReason String?
+
+  acceptedAt  DateTime?
+  arrivedAt   DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  cancelledAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  passenger          User                @relation("ride_passenger", fields: [passengerId], references: [id], onDelete: Cascade)
+  driver             User?               @relation("ride_driver", fields: [driverId], references: [id], onDelete: SetNull)
+  paymentTransaction PaymentTransaction?
+  review             RideReview?
+
+  @@index([passengerId, createdAt])
+  @@index([driverId, createdAt])
+  @@index([status])
+  @@map("rides")
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  balance   Decimal  @default(0) @db.Decimal(12, 2)
+  currency  String   @default("PKR")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions PaymentTransaction[]
+
+  @@map("wallets")
+}
+
+model PaymentTransaction {
+  id          String          @id @default(cuid())
+  userId      String
+  rideId      String?         @unique
+  type        TransactionType @default(RIDE_FARE)
+  method      PaymentMethod
+  amount      Decimal         @db.Decimal(12, 2)
+  loanAmount  Decimal?        @default(0) @db.Decimal(12, 2)
+  currency    String          @default("PKR")
+  status      PaymentStatus   @default(PENDING)
+  providerRef String?
+  metadata    Json?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ride     Ride?   @relation(fields: [rideId], references: [id], onDelete: SetNull)
+  wallet   Wallet? @relation(fields: [walletId], references: [id])
+  walletId String?
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@map("payment_transactions")
+}
+
+model SavedPlace {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  address   String
+  lat       Float?
+  lng       Float?
+  type      PlaceType @default(OTHER)
+  isDefault Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("saved_places")
+}
+
+model SupportTicket {
+  id           String                @id @default(cuid())
+  userId       String
+  assignedToId String?
+  subject      String
+  message      String
+  category     String?
+  status       SupportTicketStatus   @default(OPEN)
+  priority     SupportTicketPriority @default(MEDIUM)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedTo User?                  @relation("support_assigned_to", fields: [assignedToId], references: [id], onDelete: SetNull)
+  replies    SupportTicketMessage[]
+
+  @@index([userId, status])
+  @@index([assignedToId])
+  @@map("support_tickets")
+}
+
+model SupportTicketMessage {
+  id         String   @id @default(cuid())
+  ticketId   String
+  senderId   String
+  message    String
+  isInternal Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  sender User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, createdAt])
+  @@map("support_ticket_messages")
+}
+
+model RideReview {
+  id         String   @id @default(cuid())
+  rideId     String   @unique
+  reviewerId String
+  revieweeId String
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  ride     Ride @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  reviewer User @relation("reviews_given", fields: [reviewerId], references: [id], onDelete: Cascade)
+  reviewee User @relation("reviews_received", fields: [revieweeId], references: [id], onDelete: Cascade)
+
+  @@index([reviewerId])
+  @@index([revieweeId])
+  @@map("ride_reviews")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model SystemSettings {
+  id           String   @id @default("global")
+  platformName String   @default("Transport Hub")
+  supportEmail String   @default("support@transporthub.com")
+  maintenance  Boolean  @default(false)
+  baseFare     Float    @default(30)
+  perKmRate    Float    @default(10)
+  platformFee  Float    @default(15)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("system_settings")
 }

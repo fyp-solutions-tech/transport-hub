@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import React from "react";
 
 export interface NavItem {
   href: string;
   label: string;
-  icon: ReactNode;
+  icon: React.ReactNode;
 }
 
 interface SidebarNavProps {
@@ -18,24 +18,28 @@ export default function SidebarNav({ items }: SidebarNavProps) {
   const pathname = usePathname();
 
   return (
-    <ul className="menu menu-lg gap-1 w-full px-2">
+    <ul className="flex flex-col gap-1 w-full">
       {items.map((item) => {
         const isActive =
           pathname === item.href ||
-          (item.href !== "/" && pathname.startsWith(item.href));
+          (item.href !== "/admin" && pathname.startsWith(item.href));
 
         return (
           <li key={item.href}>
             <Link
               href={item.href}
-              className={`flex items-center gap-3 rounded font-medium transition-all duration-200 ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all duration-200 group ${
                 isActive
-                  ? "bg-primary text-primary-content shadow-md"
-                  : "text-base-content/70 hover:bg-base-200 hover:text-base-content"
+                  ? "bg-primary-container text-white shadow-lg shadow-blue-600/20"
+                  : "text-secondary hover:bg-surface-container hover:text-primary"
               }`}
             >
-              <span className="text-lg">{item.icon}</span>
-              <span>{item.label}</span>
+              <span className={`text-[22px] flex items-center justify-center transition-transform duration-200 group-hover:scale-110`}>
+                {item.icon}
+              </span>
+              <span className="font-label-sm text-[14px] leading-relaxed">
+                {item.label}
+              </span>
             </Link>
           </li>
         );
@@ -43,3 +47,4 @@ export default function SidebarNav({ items }: SidebarNavProps) {
     </ul>
   );
 }
+

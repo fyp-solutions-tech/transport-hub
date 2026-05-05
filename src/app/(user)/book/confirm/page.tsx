@@ -26,8 +26,9 @@ import {
   VEHICLES,
   type VehicleCategory,
 } from "@/store/useBookingStore";
-import { usePaymentStore } from "@/store/usePaymentStore";
+import { useRideStore } from "@/store/useRideStore";
 import { useRideTrackingStore } from "@/store/useRideTrackingStore";
+import { api } from "@/lib/api";
 
 type PaymentMethod = "cash" | "loan" | "card";
 
@@ -57,8 +58,7 @@ export default function BookConfirmPage() {
     setLoanApplied,
   } = useBookingStore();
 
-  const { setActiveRide } = useRideTrackingStore();
-  const { paymentMethods, updateLoan, addTransaction } = usePaymentStore();
+  const { setRide, setStatus } = useRideStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -100,11 +100,11 @@ export default function BookConfirmPage() {
   };
 
   const handlePaymentSelect = (methodId: string) => {
-    const selected = paymentMethods.find(m => m.id === methodId);
+    const selected = PAYMENT_OPTIONS.find((m) => m.id === methodId);
     if (!selected) return;
-    
-    setPaymentMethod(selected.type as any);
-    setLoanApplied(selected.type === "loan");
+
+    setPaymentMethod(selected.id);
+    setLoanApplied(selected.id === "loan");
     setShowPaymentModal(false);
   };
 
@@ -124,21 +124,17 @@ export default function BookConfirmPage() {
         distanceKm: distance,
         durationMin: duration,
         fare: fare.total + loanInterest,
-        paymentMethod,
+        paymentMethod: paymentMethod.toUpperCase(),
         loanAmount: loanApplied ? fare.total : 0,
       };
 
-      const res = await fetch("/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await api.post<any>("/rides/request", payload);
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Booking failed");
-
-      toast.success("Ride booked successfully!");
-      router.push(`/rides/${data.bookingId}`);
+      setRide(response);
+      setStatus("SEARCHING");
+      useRideTrackingStore.getState().setActiveRide(response.id);
+      toast.success("Ride requested! Searching for drivers...");
+      router.push(`/rides/${response.id}`);
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -148,7 +144,7 @@ export default function BookConfirmPage() {
 
   if (!pickup || !dropoff) return null;
 
-  const currentPayment = paymentMethods.find(m => m.type === paymentMethod) || paymentMethods[0];
+  const currentPayment = PAYMENT_OPTIONS.find(m => m.id === paymentMethod) || PAYMENT_OPTIONS[0];
 
   return (
     <div className="max-w-2xl mx-auto space-y-8 pb-12">
@@ -255,7 +251,7 @@ export default function BookConfirmPage() {
               </div>
               <div>
                 <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Payment Method</p>
-                <p className="text-[16px] font-bold text-[#111c2d]">{currentPayment?.name}</p>
+                <p className="text-[16px] font-bold text-[#111c2d]">{currentPayment?.label}</p>
               </div>
             </div>
             <button onClick={() => setShowPaymentModal(true)} className="text-sm font-bold text-blue-600 hover:underline">Change</button>
@@ -287,24 +283,24 @@ export default function BookConfirmPage() {
               <button onClick={() => setShowPaymentModal(false)} className="text-slate-400 hover:text-blue-600 transition-colors"><MdClose className="text-2xl" /></button>
             </div>
             <div className="p-6 space-y-3">
-              {paymentMethods.map((m) => (
+              {PAYMENT_OPTIONS.map((m) => (
                 <button
                   key={m.id}
                   onClick={() => handlePaymentSelect(m.id)}
                   className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${
-                    paymentMethod === m.type ? "border-blue-600 bg-blue-50" : "border-slate-50 bg-slate-50/50 hover:border-blue-100"
+                    paymentMethod === m.id ? "border-blue-600 bg-blue-50" : "border-slate-50 bg-slate-50/50 hover:border-blue-100"
                   }`}
                 >
                   <div className="flex items-center gap-4 text-left">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${paymentMethod === m.type ? "bg-blue-600 text-white" : "bg-white text-slate-400 shadow-sm"}`}>
-                      <MdPayment className="text-xl" />
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${paymentMethod === m.id ? "bg-blue-600 text-white" : "bg-white text-slate-400 shadow-sm"}`}>
+                      <m.icon className="text-xl" />
                     </div>
                     <div>
-                      <p className="text-[14px] font-bold text-[#111c2d]">{m.name}</p>
-                      <p className="text-[12px] text-slate-400 capitalize">{m.type}</p>
+                      <p className="text-[14px] font-bold text-[#111c2d]">{m.label}</p>
+                      <p className="text-[12px] text-slate-400 capitalize">{m.desc}</p>
                     </div>
                   </div>
-                  {paymentMethod === m.type && <MdCheckCircle className="text-blue-600 text-xl" />}
+                  {paymentMethod === m.id && <MdCheckCircle className="text-blue-600 text-xl" />}
                 </button>
               ))}
             </div>

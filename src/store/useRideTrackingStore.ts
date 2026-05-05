@@ -17,6 +17,8 @@ export interface MockDriver {
   plate: string;
   rating: number;
   category: 'economy' | 'comfort' | 'moto';
+  /** Populated for passenger demo / UI */
+  phone?: string;
 }
 
 interface RideTrackingState {
@@ -73,6 +75,26 @@ export function getDriverForCategory(vehicleType: string): MockDriver {
   const category = vehicleType === 'comfort' ? 'comfort' : vehicleType === 'moto' ? 'moto' : 'economy';
   const pool = MOCK_DRIVERS.filter((d) => d.category === category);
   return pool[Math.floor(Math.random() * pool.length)];
+}
+
+const DEMO_DRIVER_PHONE = '+92 300 555 0199';
+
+/** Stable mock driver per ride + vehicle tier (for passenger demo / screenshots). */
+export function getDeterministicDemoDriver(
+  rideId: string,
+  vehicleType: string | null | undefined
+): MockDriver {
+  const vt = (vehicleType || 'economy').toLowerCase();
+  const category: MockDriver['category'] =
+    vt === 'comfort' ? 'comfort' : vt === 'moto' ? 'moto' : 'economy';
+  const pool = MOCK_DRIVERS.filter((d) => d.category === category);
+  let hash = 0;
+  for (let i = 0; i < rideId.length; i++) {
+    hash = (Math.imul(31, hash) + rideId.charCodeAt(i)) | 0;
+  }
+  const idx = Math.abs(hash) % pool.length;
+  const d = pool[idx];
+  return { ...d, phone: DEMO_DRIVER_PHONE };
 }
 
 export const useRideTrackingStore = create<RideTrackingState>()(

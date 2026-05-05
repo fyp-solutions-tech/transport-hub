@@ -17,27 +17,27 @@ export default async function DriverEarningsPage() {
     weekStart.setDate(today.getDate() - today.getDay());
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const todayRides = await prisma.Ride.findMany({
+    const todayRides = await prisma.ride.findMany({
       where: { driverId, status: "COMPLETED", createdAt: { gte: today } },
       select: { fare: true, rating: true }
     });
 
-    const weekRides = await prisma.Ride.findMany({
+    const weekRides = await prisma.ride.findMany({
       where: { driverId, status: "COMPLETED", createdAt: { gte: weekStart } },
       select: { fare: true, rating: true, createdAt: true }
     });
 
-    const monthRides = await prisma.Ride.findMany({
+    const monthRides = await prisma.ride.findMany({
       where: { driverId, status: "COMPLETED", createdAt: { gte: monthStart } },
       select: { fare: true, rating: true }
     });
 
-    const allRides = await prisma.Ride.findMany({
+    const allRides = await prisma.ride.findMany({
       where: { driverId, status: "COMPLETED" },
       select: { fare: true, rating: true }
     });
 
-    transactions = await prisma.Ride.findMany({
+    transactions = await prisma.ride.findMany({
       where: { driverId, status: { in: ["COMPLETED", "CANCELLED"] } },
       include: { passenger: { select: { name: true } } },
       orderBy: { createdAt: "desc" },

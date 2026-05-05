@@ -23,6 +23,11 @@ export const auth = betterAuth({
     },
     user: {
         additionalFields: {
+            phone: {
+                type: "string",
+                required: false,
+                input: true,
+            },
             role: {
                 type: "string",
                 required: false,

@@ -47,10 +47,10 @@ export default async function DriverDashboardPage() {
     totalTrips = completed.length;
     todayEarnings = completed
       .filter((r) => new Date(r.createdAt) >= todayStart)
-      .reduce((s: number, r) => s + (r.fare ?? 0), 0);
+      .reduce((s: number, r) => s + Number(r.fare ?? 0), 0);
     weeklyEarnings = completed
       .filter((r) => new Date(r.createdAt) >= weekStart)
-      .reduce((s: number, r) => s + (r.fare ?? 0), 0);
+      .reduce((s: number, r) => s + Number(r.fare ?? 0), 0);
 
     const rated = completed.filter((r) => r.rating != null);
     if (rated.length > 0) {
@@ -64,10 +64,10 @@ export default async function DriverDashboardPage() {
         name: r.passenger?.name || "Passenger", 
         initials: (r.passenger?.name || "P").split(" ").map(n => n[0]).join("") 
       },
-      time: new Date(r.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      date: new Date(r.createdAt).toLocaleDateString(),
+      time: r.createdAt.toISOString(),
+      date: r.createdAt.toISOString(),
       destination: r.dropoffAddress,
-      amount: `PKR ${Math.round(r.fare || 0).toLocaleString()}`,
+      amount: `PKR ${Math.round(Number(r.fare) || 0).toLocaleString()}`,
       status: r.status
     }));
 

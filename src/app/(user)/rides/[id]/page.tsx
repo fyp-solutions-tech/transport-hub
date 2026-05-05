@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import RidePageContent from "./RidePageContent";
+import { RidePageContent } from "./RidePageContent";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -11,6 +11,7 @@ export default async function RidePage({ params }: PageProps) {
 
   const ride = await prisma.ride.findUnique({
     where: { id },
+    include: { driver: true },
   });
 
   if (!ride) {
@@ -26,10 +27,13 @@ export default async function RidePage({ params }: PageProps) {
     dropoffLat: ride.dropoffLat,
     dropoffLng: ride.dropoffLng,
     dropoffAddress: ride.dropoffAddress,
-    fare: ride.fare || 0,
+    fare: Number(ride.fare) || 0,
     distanceKm: ride.distanceKm || 0,
     durationMin: ride.durationMin || 0,
-    vehicleType: ride.vehicleType || "Economy",
+    vehicleType: ride.vehicleType || "economy",
+    status: ride.status,
+    driverId: ride.driverId,
+    driver: ride.driver,
   };
 
   return <RidePageContent ride={rideData} />;

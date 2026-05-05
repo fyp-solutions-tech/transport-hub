@@ -1,88 +1,66 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+import { useRideStore } from "@/store/useRideStore";
+import { useSocket } from "@/hooks/useSocket";
 import { toast } from "sonner";
-import { useRideTrackingStore, TrackingStatus } from "@/store/useRideTrackingStore";
+import { api } from "@/lib/api";
 
 export function RideTrackerProvider({ children }: { children: React.ReactNode }) {
-  const { 
-    activeRideId, 
-    status, 
-    lastToastedStatus, 
-    setStatus, 
-    setLastToastedStatus,
-    clearTracking
-  } = useRideTrackingStore();
+  const { currentRide, status, setStatus, setRide } = useRideStore();
+  const { socket, isConnected } = useSocket();
 
-  const syncInterval = useRef<NodeJS.Timeout | null>(null);
-
-  // Background progression logic (Demo speed)
+  // 1. Sync active ride on mount
   useEffect(() => {
-    if (!activeRideId || status === 'IDLE' || status === 'COMPLETED' || status === 'CANCELLED') {
-      if (syncInterval.current) clearInterval(syncInterval.current);
-      return;
-    }
-
-    const interval = setInterval(() => {
-      const nextStatusMap: Record<TrackingStatus, TrackingStatus | null> = {
-        'IDLE': null,
-        'SEARCHING': 'ACCEPTED',
-        'ACCEPTED': 'ARRIVING',
-        'ARRIVING': 'IN_PROGRESS',
-        'ARRIVED': 'IN_PROGRESS',
-        'IN_PROGRESS': 'COMPLETED',
-        'COMPLETED': null,
-        'CANCELLED': null,
-      };
-
-      const nextStatus = nextStatusMap[status];
-
-      if (nextStatus) {
-        setStatus(nextStatus);
-        
-        // Sync to DB
-        fetch(`/api/bookings/${activeRideId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: nextStatus })
-        }).catch(err => console.error("Sync error:", err));
+    const syncActiveRide = async () => {
+      try {
+        const activeRides = await api.get<any[]>("/rides/active");
+        if (activeRides && activeRides.length > 0) {
+          const ride = activeRides[0];
+          setRide(ride);
+          setStatus(ride.status);
+        }
+      } catch (err) {
+        console.error("Failed to sync active ride:", err);
       }
-    }, 20000); // 20 seconds per stage for realistic background movement
+    };
 
-    syncInterval.current = interval;
-    return () => clearInterval(interval);
-  }, [activeRideId, status, setStatus]);
+    syncActiveRide();
+  }, [setRide, setStatus]);
 
-  // Toast Notifications
+  // 2. Global Socket Listeners for Status
   useEffect(() => {
-    if (status !== lastToastedStatus) {
-      const toastId = 'ride-tracking-global';
-      switch (status) {
-        case 'SEARCHING':
-          toast.loading("Finding a nearby driver...", { id: toastId });
+    if (!socket) return;
+
+    const handleStatusUpdate = (data: { status: any }) => {
+      setStatus(data.status);
+      
+      const toastId = "ride-status-update";
+      switch (data.status) {
+        case "ACCEPTED":
+          toast.success("Driver found! They are on their way.", { id: toastId });
           break;
-        case 'ACCEPTED':
-          toast.success("Driver assigned! They are preparing to pick you up.", { id: toastId });
+        case "ARRIVING":
+          toast.info("Driver has arrived at the pickup location.", { id: toastId });
           break;
-        case 'ARRIVING':
-          toast.info("Driver is on the way to your location.", { id: toastId });
+        case "IN_PROGRESS":
+          toast.success("Ride started! Have a safe trip.", { id: toastId });
           break;
-        case 'IN_PROGRESS':
-          toast.info("Your ride has started. Have a safe journey!", { id: toastId });
+        case "COMPLETED":
+          toast.success("You have arrived! Journey completed.", { id: toastId });
           break;
-        case 'COMPLETED':
-          toast.success("You have arrived! Ride completed successfully.", { id: toastId });
-          // Clear tracking after a delay
-          setTimeout(() => clearTracking(), 5000);
-          break;
-        case 'CANCELLED':
-          toast.error("Ride has been cancelled.", { id: toastId });
-          setTimeout(() => clearTracking(), 5000);
+        case "CANCELLED":
+          toast.error("Ride was cancelled.", { id: toastId });
           break;
       }
-      setLastToastedStatus(status);
-    }
-  }, [status, lastToastedStatus, setLastToastedStatus, clearTracking]);
+    };
+
+    socket.on("ride:status_update", handleStatusUpdate);
+
+    return () => {
+      socket.off("ride:status_update", handleStatusUpdate);
+    };
+  }, [socket, setStatus]);
 
   return <>{children}</>;
 }

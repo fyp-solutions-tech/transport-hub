@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 
@@ -19,11 +18,23 @@ const bookingSchema = z.object({
   loanAmount: z.coerce.number().finite().nonnegative().optional(),
 });
 
+const mapPaymentMethod = (method: string | undefined) => {
+  switch (method) {
+    case "card":
+      return "DEBIT_CARD";
+    case "loan":
+      return "LOAN";
+    case "cash":
+    default:
+      return "CASH";
+  }
+};
+
 export async function POST(request: NextRequest) {
   try {
     // ── Authenticate user ─────────────────────────────
     const session = await auth.api.getSession({
-      headers: await headers(),
+      headers: request.headers,
     });
 
     if (!session?.user?.id) {
@@ -71,7 +82,7 @@ export async function POST(request: NextRequest) {
         durationMin: durationMin ?? null,
         fare,
         status: "PENDING",
-        paymentMethod: paymentMethod ?? "cash",
+        paymentMethod: mapPaymentMethod(paymentMethod),
         loanAmount: loanAmount ?? 0,
       },
     });

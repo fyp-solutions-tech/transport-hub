@@ -31,11 +31,11 @@ export default function HomePage() {
             <div className="bg-base-100 rounded-xl shadow-[0_20px_40px_rgba(37,99,235,0.05)] p-6 border border-base-200 mt-4">
               <form className="flex flex-col gap-4">
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-neutral"><MdMyLocation /></span>
+                  <MdMyLocation className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral text-xl" />
                   <input className="w-full pl-12 pr-4 py-3 bg-base-200/50 border border-base-300 rounded-lg text-[16px] focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="Pickup location" type="text" />
                 </div>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-neutral"><IoLocationOutline /></span>
+                  <IoLocationOutline className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral text-xl" />
                   <input className="w-full pl-12 pr-4 py-3 bg-base-200/50 border border-base-300 rounded-lg text-[16px] focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="Drop-off destination" type="text" />
                 </div>
 
@@ -43,21 +43,21 @@ export default function HomePage() {
                   <label className="cursor-pointer relative">
                     <input className="peer sr-only" name="ride_type" type="radio" value="bike" />
                     <div className="flex flex-col items-center justify-center py-3 border border-base-300 rounded-lg peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary hover:bg-base-200 transition-colors">
-                      <span className="material-symbols-outlined mb-1"><RiMotorbikeFill /></span>
+                      <RiMotorbikeFill className="text-xl mb-1" />
                       <span className="font-semibold text-[12px] text-center">Bike</span>
                     </div>
                   </label>
                   <label className="cursor-pointer relative">
                     <input defaultChecked className="peer sr-only" name="ride_type" type="radio" value="economy" />
                     <div className="flex flex-col items-center justify-center py-3 border border-base-300 rounded-lg peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary hover:bg-base-200 transition-colors">
-                      <span className="material-symbols-outlined mb-1"><BsCarFrontFill /></span>
+                      <BsCarFrontFill className="text-xl mb-1" />
                       <span className="font-semibold text-[12px] text-center">Economy</span>
                     </div>
                   </label>
                   <label className="cursor-pointer relative">
                     <input className="peer sr-only" name="ride_type" type="radio" value="comfort" />
                     <div className="flex flex-col items-center justify-center py-3 border border-base-300 rounded-lg peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary hover:bg-base-200 transition-colors">
-                      <span className="material-symbols-outlined mb-1"><IoCarSport /></span>
+                      <IoCarSport className="text-xl mb-1" />
                       <span className="font-semibold text-[12px] text-center">Comfort</span>
                     </div>
                   </label>
@@ -81,7 +81,7 @@ export default function HomePage() {
             {/* Step 1 */}
             <div className="bg-base-100 p-8 rounded-xl shadow-[0_10px_30px_rgba(37,99,235,0.03)] border border-base-200 flex flex-col items-center gap-4 hover:-translate-y-1 transition-transform duration-300">
               <div className="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center text-primary mb-2">
-                <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}><HiCursorArrowRipple /></span>
+                <HiCursorArrowRipple className="text-3xl" />
               </div>
               <h3 className="text-[24px] font-semibold text-base-content">Book</h3>
               <p className="text-[16px] text-base-content/80 text-center">Enter your destination and choose the perfect ride for your needs.</p>
@@ -90,7 +90,7 @@ export default function HomePage() {
             <div className="bg-base-100 p-8 rounded-xl shadow-[0_10px_30px_rgba(37,99,235,0.03)] border border-base-200 flex flex-col items-center gap-4 hover:-translate-y-1 transition-transform duration-300 relative">
               <div className="hidden md:block absolute top-1/2 -left-4 w-8 h-px bg-base-300"></div>
               <div className="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center text-primary mb-2">
-                <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}><MdRoute /></span>
+                <MdRoute className="text-3xl" />
               </div>
               <h3 className="text-[24px] font-semibold text-base-content">Track</h3>
               <p className="text-[16px] text-base-content/80 text-center">Follow your driver in real-time on the map as they arrive.</p>
@@ -99,7 +99,7 @@ export default function HomePage() {
             <div className="bg-base-100 p-8 rounded-xl shadow-[0_10px_30px_rgba(37,99,235,0.03)] border border-base-200 flex flex-col items-center gap-4 hover:-translate-y-1 transition-transform duration-300 relative">
               <div className="hidden md:block absolute top-1/2 -left-4 w-8 h-px bg-base-300"></div>
               <div className="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center text-primary mb-2">
-                <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}><MdPayments /></span>
+                <MdPayments className="text-3xl" />
               </div>
               <h3 className="text-[24px] font-semibold text-base-content">Pay</h3>
               <p className="text-[16px] text-base-content/80 text-center">Seamless cashless payments automatically processed at drop-off.</p>
@@ -120,12 +120,12 @@ export default function HomePage() {
                 <div className="flex justify-between items-center">
                   <h3 className="text-[24px] font-semibold text-base-content">Economy</h3>
                   <span className="bg-base-200 text-base-content/80 px-3 py-1 rounded-full text-[12px] font-medium flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[16px]">person</span> 1-4
+                    <span className="text-[16px]">person</span> 1-4
                   </span>
                 </div>
                 <p className="text-[16px] text-base-content/80 grow">Affordable everyday rides. Perfect for getting around the city quickly and comfortably.</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="material-symbols-outlined text-primary text-sm"><FaRegCircleCheck /></span>
+                  <FaRegCircleCheck className="text-primary text-sm" />
                   <span className="text-[12px] font-medium text-base-content/80">Standard Legroom</span>
                 </div>
               </div>
@@ -141,12 +141,12 @@ export default function HomePage() {
                 <div className="flex justify-between items-center">
                   <h3 className="text-[24px] font-semibold text-base-content">Comfort</h3>
                   <span className="bg-base-200 text-base-content/80 px-3 py-1 rounded-full text-[12px] font-medium flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[16px]">person</span> 1-4
+                    <span className="text-[16px]">person</span> 1-4
                   </span>
                 </div>
                 <p className="text-[16px] text-base-content/80 grow">Newer cars with extra legroom. Ideal for business travel or when you just want to relax.</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="material-symbols-outlined text-primary text-sm"><FaRegCircleCheck /></span>
+                  <FaRegCircleCheck className="text-primary text-sm" />
                   <span className="text-[12px] font-medium text-base-content/80">Extra Legroom & Top Drivers</span>
                 </div>
               </div>
@@ -161,12 +161,12 @@ export default function HomePage() {
                 <div className="flex justify-between items-center">
                   <h3 className="text-[24px] font-semibold text-base-content">Bike</h3>
                   <span className="bg-base-200 text-base-content/80 px-3 py-1 rounded-full text-[12px] font-medium flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[16px]">person</span> 1
+                    <span className="text-[16px]">person</span> 1
                   </span>
                 </div>
                 <p className="text-[16px] text-base-content/80 grow">Beat the traffic. The fastest way to navigate through congested city streets.</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="material-symbols-outlined text-primary text-sm"><FaRegCircleCheck /></span>
+                  <FaRegCircleCheck className="text-primary text-sm" />
                   <span className="text-[12px] font-medium text-base-content/80">Helmets Provided</span>
                 </div>
               </div>

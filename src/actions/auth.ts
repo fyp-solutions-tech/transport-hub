@@ -55,8 +55,9 @@ export async function loginAction(
             message: "Account login successfully!",
         };
     } catch (error: any) {
+        console.error("Login Error:", error);
         return {
-            message: error.message || "Failed to logged in account. Try again.",
+            message: typeof error.message === "string" ? error.message : "Invalid email or password",
         };
     }
 }
@@ -94,8 +95,9 @@ export async function registerAction(
             message: "Account created successfully!",
         };
     } catch (error: any) {
+        console.error("Registration Error:", error);
         return {
-            message: error.message || "Failed to create account. Try again.",
+            message: typeof error.message === "string" ? error.message : "Failed to create account. Try again.",
         };
     }
 }

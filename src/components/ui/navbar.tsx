@@ -20,7 +20,7 @@ const Navbar = () => {
           </ul>
         </div>
         <Link href="/" className="text-2xl font-black tracking-tight text-primary btn btn-ghost">
-        <Image src="/logo.png" alt="TransportHub" width={130} height={130} />
+        <Image src="/logo.png" alt="TransportHub" width={130} height={40} style={{ height: 'auto' }} />
         </Link>
       </div>
       <div className="navbar-center hidden lg:flex">

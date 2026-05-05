@@ -18,7 +18,16 @@ import {
 export const metadata = { title: "Saved Places | Skyline Hub" };
 
 export default async function SavedPlacesPage() {
-  await requireRole("USER");
+  const { session } = await requireRole("USER");
+
+  const places = await prisma.savedPlace.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const home = places.find(p => p.type === "HOME");
+  const work = places.find(p => p.type === "WORK");
+  const others = places.filter(p => p.type === "OTHER");
 
   return (
     <div className="space-y-8 pb-12">
@@ -37,7 +46,7 @@ export default async function SavedPlacesPage() {
               </div>
               <div>
                 <h3 className="text-[14px] font-semibold text-[#111c2d]">Home</h3>
-                <p className="text-sm text-slate-500 mt-1">Add your home address</p>
+                <p className="text-sm text-slate-500 mt-1">{home?.address || "Add your home address"}</p>
               </div>
             </div>
             <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -58,7 +67,7 @@ export default async function SavedPlacesPage() {
               </div>
               <div>
                 <h3 className="text-[14px] font-semibold text-[#111c2d]">Work</h3>
-                <p className="text-sm text-slate-500 mt-1">Add your work address</p>
+                <p className="text-sm text-slate-500 mt-1">{work?.address || "Add your work address"}</p>
               </div>
             </div>
             <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

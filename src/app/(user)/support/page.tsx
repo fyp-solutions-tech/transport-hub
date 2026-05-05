@@ -1,4 +1,5 @@
 import { requireRole } from "@/lib/session";
+import SupportContent from "./SupportContent";
 import { MdQuiz, MdMail, MdLibraryBooks, MdMenuBook, MdVerifiedUser, MdPhone, MdChat, MdSentimentVerySatisfied, MdSentimentNeutral, MdSentimentVeryDissatisfied } from "react-icons/md";
 
 export const metadata = { title: "Support Center | Skyline Hub" };
@@ -43,7 +44,7 @@ export default async function SupportPage() {
                     <span className="text-[14px] font-semibold text-[#111c2d]">{faq.q}</span>
                     <span className="material-symbols-outlined transition-transform duration-300 group-open:rotate-180 text-blue-600 select-none">expand_more</span>
                   </summary>
-                  <div className="px-6 pb-6 text-[16px] text-[#434655] leading-relaxed">
+                  <div className="px-6 pb-6 text-[16px] text-on-surface-variant leading-relaxed">
                     {faq.a}
                   </div>
                 </details>
@@ -53,42 +54,7 @@ export default async function SupportPage() {
         </div>
 
         {/* Contact Form */}
-        <div className="lg:col-span-5">
-          <div className="bg-white rounded-xl shadow-[0_20px_40px_rgba(37,99,235,0.05)] p-8 border border-slate-50">
-            <div className="flex items-center gap-3 mb-8">
-              <MdMail className="text-blue-600 text-3xl" />
-              <h2 className="text-[24px] font-semibold text-[#111c2d]">Direct Support</h2>
-            </div>
-            <form className="space-y-6">
-              <div className="space-y-2">
-                <label className="block text-[14px] font-semibold text-[#434655]">Subject</label>
-                <select className="w-full bg-[#f9f9ff] border-none rounded-lg p-3 text-[16px] focus:ring-2 focus:ring-blue-600 transition-all outline-none">
-                  <option>Technical Issue</option>
-                  <option>Billing Inquiry</option>
-                  <option>Lost and Found</option>
-                  <option>Feedback &amp; Suggestions</option>
-                  <option>Safety Concern</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="block text-[14px] font-semibold text-[#434655]">Message</label>
-                <textarea
-                  rows={5}
-                  placeholder="Describe your issue in detail..."
-                  className="w-full bg-[#f9f9ff] border-none rounded-lg p-4 text-[16px] focus:ring-2 focus:ring-blue-600 transition-all outline-none resize-none"
-                />
-              </div>
-              <div className="flex items-center gap-2 text-[12px] text-slate-500">
-                <span className="material-symbols-outlined text-sm">info</span>
-                Response time is typically under 15 minutes.
-              </div>
-              <button type="button" className="w-full bg-blue-600 text-white py-4 rounded-xl text-[14px] font-semibold shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all">
-                Submit Request
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
+        <div className="lg:col-span-5"><SupportContent /></div></div>
 
       {/* Knowledge Base + Feedback */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

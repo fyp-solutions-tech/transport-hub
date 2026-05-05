@@ -12,7 +12,7 @@ export async function updateSystemSettings(formData: FormData) {
     const perKmRate = parseFloat(formData.get("perKmRate") as string) || 0;
     const platformFee = parseFloat(formData.get("platformFee") as string) || 0;
 
-    await (prisma as any).systemSettings.upsert({
+    await prisma.systemSettings.upsert({
       where: { id: "global" },
       update: {
         platformName,
@@ -43,7 +43,7 @@ export async function updateSystemSettings(formData: FormData) {
 
 export async function getSystemSettings() {
   try {
-    const settings = await (prisma as any).systemSettings.findUnique({
+    const settings = await prisma.systemSettings.findUnique({
       where: { id: "global" },
     });
 

@@ -25,30 +25,38 @@ export default async function PaymentPage() {
 
   let rides: any[] = [];
   let totalSpent = 0;
+  let balance = 0;
   let recentActivity = { amount: 0, label: "No recent activity" };
 
   try {
-    rides = await prisma.ride.findMany({
-      where: { passengerId: session.user.id, status: "COMPLETED" },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        fare: true,
-        paymentMethod: true,
-        status: true,
-        createdAt: true,
-        pickupAddress: true,
-        dropoffAddress: true,
-      },
-    });
+    const [ridesData, wallet] = await Promise.all([
+      prisma.ride.findMany({
+        where: { passengerId: session.user.id, status: "COMPLETED" },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          fare: true,
+          paymentMethod: true,
+          status: true,
+          createdAt: true,
+          pickupAddress: true,
+          dropoffAddress: true,
+        },
+      }),
+      prisma.wallet.findUnique({
+        where: { userId: session.user.id }
+      })
+    ]);
 
-    totalSpent = rides.reduce((s, r) => s + (r.fare ?? 0), 0);
+    rides = ridesData;
+    balance = Number(wallet?.balance || 0);
+    totalSpent = rides.reduce((s, r) => s + Number(r.fare ?? 0), 0);
 
     if (rides.length > 0) {
       const latest = rides[0];
       recentActivity = {
-        amount: Math.round(latest.fare ?? 0),
-        label: `${latest.pickupAddress.split(",")[0]} → ${latest.dropoffAddress.split(",")[0]} • Today`,
+        amount: Math.round(Number(latest.fare ?? 0)),
+        label: `${latest.pickupAddress.split(",")[0]} → ${latest.dropoffAddress.split(",")[0]} • Recent`,
       };
     }
   } catch (err) {
@@ -77,15 +85,15 @@ export default async function PaymentPage() {
       {/* ── Wallet Overview Cards ─────────────────── */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Balance */}
-        <div className="rounded-xl p-6 border border-slate-50 bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-[0_20px_40px_rgba(37,99,235,0.15)] hover:-translate-y-0.5 transition-all">
+        <div className="rounded-xl p-6 border border-slate-50 bg-linear-to-br from-blue-600 to-blue-700 text-white shadow-[0_20px_40px_rgba(37,99,235,0.15)] hover:-translate-y-0.5 transition-all">
           <div className="flex justify-between items-start mb-4">
             <span className="text-blue-100 font-medium text-sm">Current balance</span>
             <MdAccountBalanceWallet className="text-blue-200 text-2xl" />
           </div>
-          <div className="text-4xl font-bold mb-2">{fmt(0)}</div>
+          <div className="text-4xl font-bold mb-2">{fmt(balance)}</div>
           <div className="flex items-center gap-2 text-sm text-blue-100">
             <MdTrendingUp className="text-sm" />
-            <span>Wallet feature coming soon</span>
+            <span>Secured by SkylinePay</span>
           </div>
         </div>
 

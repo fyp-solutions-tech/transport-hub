@@ -1,25 +1,18 @@
-import Link from "next/link";
-import Image from "next/image";
-import SidebarNav from "@/components/ui/shell/sidebar-nav";
+import SidebarNav, { NavItem } from "@/components/ui/shell/sidebar-nav";
 import AdminShellMenu from "@/components/ui/shell/admin-shell-menu";
-import {
-  MdDashboard,
-  MdPeople,
-  MdDirectionsCar,
-  MdRoute,
-  MdSettings,
-  MdShield,
-} from "react-icons/md";
+import { MdOutlineDashboard, MdLocalTaxi, MdGroup, MdRoute, MdOutlinePayments, MdSupportAgent, MdOutlineSettings, MdSearch, MdNotifications, MdHelp } from "react-icons/md";
 
-const navItems = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: <MdDashboard /> },
-  { href: "/admin/users", label: "Users", icon: <MdPeople /> },
-  { href: "/admin/drivers", label: "Drivers", icon: <MdDirectionsCar /> },
-  { href: "/admin/rides", label: "All Rides", icon: <MdRoute /> },
-  { href: "/admin/settings", label: "Settings", icon: <MdSettings /> },
+const navItems: NavItem[] = [
+  { href: "/admin/dashboard", label: "Dashboard", icon: <MdOutlineDashboard /> },
+  { href: "/admin/drivers", label: "Drivers", icon: <MdLocalTaxi /> },
+  { href: "/admin/users", label: "Passengers", icon: <MdGroup /> },
+  { href: "/admin/rides", label: "Rides", icon: <MdRoute /> },
+  { href: "/admin/revenue", label: "Revenue", icon: <MdOutlinePayments /> },
+  { href: "/admin/support", label: "Support", icon: <MdSupportAgent /> },
+  { href: "/admin/settings", label: "Settings", icon: <MdOutlineSettings /> },
 ];
 
-export default async function AdminShell({
+export default function AdminShell({
   children,
   user,
 }: {
@@ -27,102 +20,67 @@ export default async function AdminShell({
   user: { name: string; email: string; image?: string | null };
 }) {
   return (
-    <div className="drawer lg:drawer-open min-h-screen bg-base-100">
-      <input id="admin-drawer" type="checkbox" className="drawer-toggle" />
-
-      <div className="drawer-content flex flex-col">
-        {/* Top Navbar */}
-        <header className="navbar bg-base-100 border-b border-base-200 sticky top-0 z-30 px-4 lg:px-6">
-          <div className="flex-none lg:hidden">
-            <label
-              htmlFor="admin-drawer"
-              className="btn btn-square btn-ghost"
-              aria-label="Open sidebar"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                className="inline-block h-5 w-5 stroke-current"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </label>
+    <div className="min-h-screen bg-surface">
+      {/* Sidebar - Desktop */}
+      <aside className="fixed left-0 top-0 h-screen w-64 border-r border-outline-variant bg-surface-container-lowest shadow-xl shadow-blue-900/5 flex-col py-6 gap-2 z-50 hidden lg:flex">
+        <div className="px-6 mb-8 flex items-center gap-3">
+          <div className="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/20">
+            <MdLocalTaxi className="text-[24px]" />
           </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-base-content/50 font-medium hidden sm:block">
-                Admin Control Panel
-              </span>
-              <span className="badge badge-secondary badge-sm">ADMIN</span>
+          <div>
+            <h1 className="text-lg font-extrabold text-primary leading-none tracking-tight">Hub Manager</h1>
+            <p className="text-[10px] uppercase tracking-widest text-outline font-bold mt-1">Terminal Alpha</p>
+          </div>
+        </div>
+
+        <nav className="flex-1 px-4">
+          <SidebarNav items={navItems} />
+        </nav>
+
+        <div className="px-6 pt-6 border-t border-outline-variant">
+          <AdminShellMenu user={user} />
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="lg:ml-64 flex flex-col min-h-screen">
+        {/* Top Header */}
+        <header className="sticky top-0 w-full z-40 bg-surface-bright/80 backdrop-blur-md border-b border-outline-variant shadow-sm flex justify-between items-center h-16 px-6">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="relative w-full max-w-md">
+              <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]" />
+              <input
+                className="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/10 transition-all font-body-md"
+                placeholder="Search rides, drivers, or passengers..."
+                type="text"
+              />
             </div>
           </div>
-          <div className="flex-none">
-            <AdminShellMenu user={user} />
+
+          <div className="flex items-center gap-2 lg:gap-4">
+            <button className="p-2 text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors rounded-full relative active:scale-95">
+              <MdNotifications className="text-[24px]" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface-bright"></span>
+            </button>
+            <button className="p-2 text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors rounded-full active:scale-95">
+              <MdHelp className="text-[24px]" />
+            </button>
+            <div className="h-8 w-px bg-outline-variant mx-2 hidden sm:block"></div>
+            <div className="flex items-center gap-3 pl-2 group cursor-pointer">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-bold text-on-surface group-hover:text-primary transition-colors">{user.name}</p>
+                <p className="text-[10px] text-outline font-bold uppercase tracking-wider">Super Admin</p>
+              </div>
+            </div>
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
-      </div>
-
-      {/* Sidebar */}
-      <div className="drawer-side z-40">
-        <label
-          htmlFor="admin-drawer"
-          aria-label="Close sidebar"
-          className="drawer-overlay"
-        />
-        <aside className="bg-base-100 border-r border-base-200 w-64 min-h-full flex flex-col">
-          <Link
-            href="/admin/dashboard"
-            className="flex items-center gap-3 px-6 py-5 border-b border-base-200"
-          >
-            <div className="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center">
-              <MdShield className="text-secondary-content text-lg" />
-            </div>
-            <span className="font-bold text-lg text-base-content">
-              Transport<span className="text-secondary">Hub</span>
-            </span>
-          </Link>
-
-          <nav className="flex-1 py-4">
-            <SidebarNav items={navItems} />
-          </nav>
-
-          <div className="p-4 border-t border-base-200">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-base-200">
-              <div className="avatar placeholder">
-                <div className="bg-secondary text-secondary-content rounded-full w-9">
-                  {user.image ? (
-                    <Image
-                      src={user.image}
-                      alt={user.name}
-                      width={36}
-                      height={36}
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <span className="text-sm font-semibold">
-                      {user.name.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold truncate">{user.name}</p>
-                <p className="text-xs text-base-content/50 truncate">
-                  Administrator
-                </p>
-              </div>
-            </div>
-          </div>
-        </aside>
+        {/* Page Canvas */}
+        <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+          {children}
+        </main>
       </div>
     </div>
   );
 }
+

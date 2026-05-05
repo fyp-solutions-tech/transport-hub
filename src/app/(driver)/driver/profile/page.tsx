@@ -19,7 +19,7 @@ export default async function DriverProfilePage() {
     if (!user) {
       error = "User not found";
     } else {
-      const rides = await prisma.Ride.findMany({
+      const rides = await prisma.ride.findMany({
         where: { driverId, status: "COMPLETED" },
         select: { fare: true, rating: true },
       });

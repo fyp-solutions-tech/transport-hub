@@ -14,11 +14,11 @@ export default function DriverMapPanel() {
   const [zoom, setZoom] = useState(13);
   const [locationAcquired, setLocationAcquired] = useState(false);
   
-  const { incomingRides, declineRide } = useDriverStore();
+  const { incomingRides, declineRide, isOnline } = useDriverStore();
   const { setActiveRide } = useRideTrackingStore();
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
 
-  const newestRide = useMemo(() => incomingRides[0], [incomingRides]);
+  const newestRide = useMemo(() => isOnline ? incomingRides[0] : null, [incomingRides, isOnline]);
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -36,10 +36,9 @@ export default function DriverMapPanel() {
   const handleAccept = async (rideId: string) => {
     setAcceptingId(rideId);
     try {
-      const res = await fetch("/api/driver/accept-ride", {
+      const res = await fetch(`/api/driver/rides/${rideId}/accept`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rideId }),
       });
       const data = await res.json();
       if (res.ok) {

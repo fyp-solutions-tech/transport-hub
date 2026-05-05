@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user?.id || session.user.role !== "DRIVER") {
       return NextResponse.json({ error: "Unauthorized or not a driver" }, { status: 401 });
     }
@@ -15,7 +14,7 @@ export async function GET() {
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     // Aggregate stats
-    const rides = await prisma.Ride.findMany({
+    const rides = await prisma.ride.findMany({
       where: { driverId },
       select: { fare: true, rating: true, status: true, createdAt: true },
     });
@@ -37,7 +36,7 @@ export async function GET() {
     const acceptanceRate = assignedRides > 0 ? `${Math.round((acceptedRides / assignedRides) * 100)}%` : "100%";
 
     // Get current active ride
-    const currentRide = await prisma.Ride.findFirst({
+    const currentRide = await prisma.ride.findFirst({
       where: {
         driverId,
         status: { in: ["ACCEPTED", "ARRIVING", "IN_PROGRESS"] },

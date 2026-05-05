@@ -55,22 +55,48 @@
   --font-size-h1: 48px;
   --line-height-h1: 1.2;
   --letter-spacing-h1: -0.02em;
+  --font-weight-h1: 900;
+
   --font-size-h2: 32px;
   --line-height-h2: 1.3;
   --letter-spacing-h2: -0.01em;
+  --font-weight-h2: 800;
+
   --font-size-h3: 24px;
   --line-height-h3: 1.4;
+  --font-weight-h3: 700;
+
   --font-size-body-lg: 18px;
   --line-height-body-lg: 1.6;
   --font-size-body-md: 16px;
   --line-height-body-md: 1.6;
   --font-size-label-sm: 14px;
   --line-height-label-sm: 1.4;
+  --font-weight-label-sm: 600;
+  
   --font-size-caption: 12px;
   --line-height-caption: 1.4;
   --letter-spacing-caption: 0.02em;
+
+  /* ── Spacing & Shape ───────────────────────────────────────── */
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
 }
 
+@utility fill-1 {
+  font-variation-settings: 'FILL' 1;
+}
+
+@utility fill-0 {
+  font-variation-settings: 'FILL' 0;
+}
+
+@layer base {
+  * {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+}
 
 @plugin "daisyui/theme" {
   name: "stitch";
@@ -120,6 +146,7 @@ button[title="Close"]>span {
 .input-container div.autocomplete-icon svg {
   display: none !important;
 }
+
 /* Notification bottom sheet animation */
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -160,19 +187,6 @@ button[title="Close"]>span {
   animation: scaleIn 0.2s ease-out;
 }
 
-
-/* Add to your global CSS */
-@keyframes slideUp {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
 .animate-slide-up {
   animation: slideUp 0.3s ease-out;
 }
@@ -205,3 +219,4 @@ button[title="Close"]>span {
 * {
   user-select: none;
 }
+

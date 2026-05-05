@@ -12,7 +12,7 @@ export default async function UserDashboardPage() {
     const { session } = await requireRole("USER")
     firstName = session.user.name.split(" ")[0]
 
-    rides = await prisma.ride.findMany({
+    const dbRides = await prisma.ride.findMany({
       where: { passengerId: session.user.id },
       orderBy: { createdAt: "desc" },
       select: {
@@ -26,6 +26,12 @@ export default async function UserDashboardPage() {
         createdAt: true,
       },
     })
+    
+    rides = JSON.parse(JSON.stringify(dbRides)).map((ride: any) => ({
+      ...ride,
+      fare: Number(ride.fare),
+      createdAt: new Date(ride.createdAt).toISOString(),
+    }))
   } catch (err) {
     console.error('Failed to load dashboard:', err)
     error = "Failed to load your dashboard. Please try again later."

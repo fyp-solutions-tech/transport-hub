@@ -1,12 +1,11 @@
 // src/app/api/profile/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -20,7 +19,7 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const rides = await prisma.Ride.findMany({
+    const rides = await prisma.ride.findMany({
       where: { passengerId: session.user.id },
       select: { fare: true, rating: true, status: true },
     });
@@ -45,7 +44,7 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

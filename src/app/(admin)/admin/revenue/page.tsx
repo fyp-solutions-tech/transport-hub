@@ -7,7 +7,7 @@ export default async function AdminRevenuePage() {
     select: { fare: true, createdAt: true }
   });
 
-  const totalRevenue = completedRides.reduce((acc, r) => acc + (r.fare || 0), 0);
+  const totalRevenue = completedRides.reduce((acc: number, r: any) => acc + (Number(r.fare) || 0), 0);
   const platformFee = totalRevenue * 0.15; // Assume 15%
 
   const stats = [
@@ -76,7 +76,7 @@ export default async function AdminRevenuePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/20">
-                {completedRides.slice(0, 10).map((ride, idx) => (
+                {completedRides.slice(0, 10).map((ride: any, idx: number) => (
                   <tr key={idx} className="hover:bg-surface-container-low/30 transition-colors">
                     <td className="px-6 py-4">
                       <p className="text-sm font-bold text-on-surface">Ride Commission</p>

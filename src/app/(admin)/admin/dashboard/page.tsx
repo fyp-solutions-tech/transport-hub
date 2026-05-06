@@ -145,7 +145,7 @@ export default async function AdminDashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/20">
-                {recentRides.map((ride) => ( ride.passenger && (
+                {recentRides.map((ride: any) => ( ride.passenger && (
                   <tr key={ride.id} className="hover:bg-surface-container-low/30 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">

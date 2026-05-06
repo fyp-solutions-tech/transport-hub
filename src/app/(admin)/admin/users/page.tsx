@@ -13,7 +13,7 @@ export default async function AdminUsersPage() {
     orderBy: { createdAt: "desc" }
   });
 
-  const displayUsers = users.map(u => ({
+  const displayUsers = users.map((u: any) => ({
     id: u.id,
     name: u.name,
     email: u.email,
@@ -101,7 +101,7 @@ export default async function AdminUsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/20">
-              {displayUsers.map((user) => (
+              {displayUsers.map((user: any) => (
                 <tr key={user.id} className="hover:bg-surface-container-low/30 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">

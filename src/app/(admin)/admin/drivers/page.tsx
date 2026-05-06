@@ -13,7 +13,7 @@ export default async function AdminDriversPage() {
     orderBy: { createdAt: "desc" }
   });
 
-  const displayDrivers = drivers.map(d => ({
+  const displayDrivers = drivers.map((d: any) => ({
     id: d.id,
     name: d.name,
     email: d.email,
@@ -104,7 +104,7 @@ export default async function AdminDriversPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/20">
-              {displayDrivers.map((driver) => (
+              {displayDrivers.map((driver: any) => (
                 <tr key={driver.id} className="hover:bg-surface-container-low/30 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">

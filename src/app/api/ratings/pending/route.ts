@@ -25,14 +25,14 @@ export async function GET() {
       take: 20,
     })
 
-    const userIds = [...new Set(pendingRidesRaw.map((r) => r.passengerId))]
+    const userIds = [...new Set(pendingRidesRaw.map((r: any) => r.passengerId))]
     const users = await prisma.user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, name: true },
     })
-    const userMap = new Map(users.map((u) => [u.id, u.name]))
+    const userMap = new Map(users.map((u: any) => [u.id, u.name]))
 
-    const pendingRides = pendingRidesRaw.map((ride) => ({
+    const pendingRides = pendingRidesRaw.map((ride: any) => ({
       id: ride.id,
       riderName: userMap.get(ride.passengerId) ?? 'Passenger',
       date: ride.createdAt.toISOString().split('T')[0],

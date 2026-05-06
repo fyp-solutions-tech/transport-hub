@@ -11,7 +11,7 @@ export default async function AdminRidesPage() {
     orderBy: { createdAt: "desc" }
   });
 
-  const displayRides = rides.map(r => ({
+  const displayRides = rides.map((r: any) => ({
     id: r.id,
     date: new Intl.DateTimeFormat('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).format(new Date(r.createdAt)),
     time: new Date(r.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -104,7 +104,7 @@ export default async function AdminRidesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/20">
-              {displayRides.map((ride) => (
+              {displayRides.map((ride: any) => (
                 <tr key={ride.id} className="hover:bg-surface-container-low/30 transition-colors group cursor-pointer">
                   <td className="px-6 py-4">
                     <p className="text-sm font-bold text-on-surface">#{ride.id.slice(-6).toUpperCase()}</p>

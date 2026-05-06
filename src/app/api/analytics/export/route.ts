@@ -43,7 +43,7 @@ export async function GET() {
     ])
 
     // Combine into CSV string
-    const csv = [headers.join(','), ...rows.map(row => row.join(','))].join('\n')
+    const csv = [headers.join(','), ...rows.map((row: any) => row.join(','))].join('\n')
 
     // Return as downloadable file
     return new NextResponse(csv, {

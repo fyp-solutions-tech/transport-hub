@@ -25,17 +25,17 @@ export async function GET() {
     })
 
     // Today's stats
-    const todayRides = allRides.filter(r => new Date(r.createdAt) >= startOfDay)
+    const todayRides = allRides.filter((r: any) => new Date(r.createdAt) >= startOfDay)
     const todayRevenue = todayRides.reduce((sum: number, r: any) => sum + (r.fare || 0), 0)
     const todayTrips = todayRides.length
 
     // Weekly stats
-    const weekRides = allRides.filter(r => new Date(r.createdAt) >= startOfWeek)
+    const weekRides = allRides.filter((r: any) => new Date(r.createdAt) >= startOfWeek)
     const weekRevenue = weekRides.reduce((sum: number, r: any) => sum + (r.fare || 0), 0)
     const weekTrips = weekRides.length
 
     // Monthly stats
-    const monthRides = allRides.filter(r => new Date(r.createdAt) >= startOfMonth)
+    const monthRides = allRides.filter((r: any) => new Date(r.createdAt) >= startOfMonth)
     const monthRevenue = monthRides.reduce((sum: number, r: any) => sum + (r.fare || 0), 0)
     const monthTrips = monthRides.length
 

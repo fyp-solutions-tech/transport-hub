@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const todayEarnings = todayRides.reduce((acc, curr) => acc + Number(curr.fare || 0), 0);
+    const todayEarnings = todayRides.reduce((acc: any, curr: any) => acc + Number(curr.fare || 0), 0);
 
     return NextResponse.json({
       ...driverStats,

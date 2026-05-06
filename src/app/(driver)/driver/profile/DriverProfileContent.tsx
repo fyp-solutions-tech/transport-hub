@@ -267,7 +267,7 @@ export default function DriverProfileContent({ initialUser, stats }: DriverProfi
           </div>
           <div className="flex flex-col gap-6">
             <p className="text-sm text-base-content/60 font-medium">Primary Payout Method</p>
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary-container p-8 text-white shadow-lg">
+            <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-primary to-primary-container p-8 text-white shadow-lg">
               <div className="flex justify-between items-start mb-12">
                 <div className="flex flex-col">
                   <span className="text-xs opacity-80">Bank Account</span>

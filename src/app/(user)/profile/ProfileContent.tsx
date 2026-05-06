@@ -193,14 +193,14 @@ export function ProfileContent({ profile }: { profile: ProfileData }) {
               <h2 className="text-[24px] font-semibold text-[#111c2d]">Security</h2>
             </div>
             <div className="space-y-4">
-              <button className="w-full p-4 rounded-xl bg-[#f0f3ff] hover:bg-[#e7eeff] transition-all cursor-pointer flex items-center justify-between">
+              <button className="w-full p-4 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all cursor-pointer flex items-center justify-between">
                 <div>
                   <p className="text-[14px] font-semibold text-[#111c2d]">Change Password</p>
                   <p className="text-[12px] text-slate-500">Last updated 3 months ago</p>
                 </div>
                 <MdLockReset className="text-blue-600 text-xl" />
               </button>
-              <div className="p-4 rounded-xl bg-[#f0f3ff] hover:bg-[#e7eeff] transition-all cursor-pointer flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all cursor-pointer flex items-center justify-between">
                 <div>
                   <p className="text-[14px] font-semibold text-[#111c2d]">Two-Factor Auth</p>
                   <p className="text-[12px] text-slate-500">Increase account security</p>

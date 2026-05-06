@@ -25,9 +25,9 @@ export default async function AdminRidesPage() {
 
   const stats = [
     { label: "Total Rides", value: displayRides.length.toString(), icon: <MdRoute />, color: "text-primary", bg: "bg-primary/10" },
-    { label: "Ongoing", value: displayRides.filter(r => r.status === 'IN_PROGRESS' || r.status === 'ACCEPTED').length.toString(), icon: <MdMotionPhotosOn />, color: "text-success", bg: "bg-success/10" },
-    { label: "Completed", value: displayRides.filter(r => r.status === 'COMPLETED').length.toString(), icon: <MdCheckCircle />, color: "text-secondary", bg: "bg-secondary/10" },
-    { label: "Cancelled", value: displayRides.filter(r => r.status === 'CANCELLED').length.toString(), icon: <MdCancel />, color: "text-error", bg: "bg-error/10" },
+    { label: "Ongoing", value: displayRides.filter((r: any) => r.status === 'IN_PROGRESS' || r.status === 'ACCEPTED').length.toString(), icon: <MdMotionPhotosOn />, color: "text-success", bg: "bg-success/10" },
+    { label: "Completed", value: displayRides.filter((r: any) => r.status === 'COMPLETED').length.toString(), icon: <MdCheckCircle />, color: "text-secondary", bg: "bg-secondary/10" },
+    { label: "Cancelled", value: displayRides.filter((r: any) => r.status === 'CANCELLED').length.toString(), icon: <MdCancel />, color: "text-error", bg: "bg-error/10" },
   ];
 
   return (
@@ -52,7 +52,7 @@ export default async function AdminRidesPage() {
 
       {/* Ride Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((s, i) => (
+        {stats.map((s: any, i) => (
           <div key={i} className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/30 hover:shadow-md transition-all">
             <div className="flex items-center gap-4">
               <div className={`w-10 h-10 ${s.bg} ${s.color} rounded-xl flex items-center justify-center`}>

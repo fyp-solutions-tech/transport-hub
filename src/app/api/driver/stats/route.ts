@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
+    const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id || session.user.role !== "DRIVER") {
       return NextResponse.json({ error: "Unauthorized or not a driver" }, { status: 401 });
     }
@@ -20,19 +21,19 @@ export async function GET(request: NextRequest) {
     });
 
     const totalTrips = rides.length;
-    const completedRides = rides.filter((r) => r.status === "COMPLETED");
-    const totalEarnings = completedRides.reduce((sum, r) => sum + (r.fare || 0), 0);
+    const completedRides = rides.filter((r: any) => r.status === "COMPLETED");
+    const totalEarnings = completedRides.reduce((sum: any, r: any) => sum + (r.fare || 0), 0);  
     
-    const todayRides = completedRides.filter((r) => new Date(r.createdAt) >= startOfToday);
-    const todayEarnings = todayRides.reduce((sum, r) => sum + (r.fare || 0), 0);
+    const todayRides = completedRides.filter((r: any) => new Date(r.createdAt) >= startOfToday);
+    const todayEarnings = todayRides.reduce((sum: any, r: any) => sum + (r.fare || 0), 0);
     const todayCount = todayRides.length;
 
-    const ratings = completedRides.filter((r) => r.rating != null).map((r) => r.rating!);
-    const avgRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+    const ratings = completedRides.filter((r: any) => r.rating != null).map((r: any) => r.rating!);
+    const avgRating = ratings.length > 0 ? ratings.reduce((a: any, b: any) => a + b, 0) / ratings.length : 0;
 
     // Acceptance rate: Number of ACCEPTED/COMPLETED rides vs Total assigned rides
     const assignedRides = rides.length;
-    const acceptedRides = rides.filter(r => r.status !== "CANCELLED").length;
+    const acceptedRides = rides.filter((r: any) => r.status !== "CANCELLED").length;
     const acceptanceRate = assignedRides > 0 ? `${Math.round((acceptedRides / assignedRides) * 100)}%` : "100%";
 
     // Get current active ride

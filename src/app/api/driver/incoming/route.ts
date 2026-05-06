@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Filter rides by vehicle type
-    const filteredRides = rides.filter(ride => {
+    const filteredRides = rides.filter((ride: any) => {
       if (!driver.vehicleType) return true;
       const rideVehicleType = (ride.vehicleType || "").toLowerCase();
       const driverVehicleType = driver.vehicleType.toLowerCase();

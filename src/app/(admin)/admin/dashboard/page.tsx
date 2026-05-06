@@ -109,7 +109,7 @@ export default async function AdminDashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((s, i) => (
+        {stats.map((s: any, i: number) => (
           <div key={i} className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/30 hover:shadow-xl hover:shadow-blue-900/5 transition-all group">
             <div className="flex justify-between items-start mb-4">
               <div className={`w-12 h-12 ${s.bg} ${s.color} rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110`}>
@@ -208,7 +208,7 @@ export default async function AdminDashboardPage() {
               <span className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-full">TODAY</span>
             </h3>
             <div className="space-y-4">
-              {newUsers.map((user) => (
+              {newUsers.map((user: any) => (
                 <div key={user.id} className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-primary font-black">

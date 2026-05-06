@@ -40,9 +40,9 @@ export default async function DriverTripsPage() {
   }
 
   const completedCount = allCompletedRides?.length || 0;
-  const totalDistance = (allCompletedRides || []).reduce((sum, r) => sum + (r.distanceKm || 0), 0);
-  const ratings = (allCompletedRides || []).filter((r) => r.rating != null).map((r) => r.rating!);
-  const avgRating = ratings.length > 0 ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2) : "4.92";
+  const totalDistance = (allCompletedRides || []).reduce((sum: number, r: any) => sum + (r.distanceKm || 0), 0);
+  const ratings = (allCompletedRides || []).filter((r: any) => r.rating != null).map((r: any) => r.rating!);
+  const avgRating = ratings.length > 0 ? (ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length).toFixed(2) : "4.92";
   const completionRate = completedCount > 0 ? "96.4" : "100";
 
   if (error) {
@@ -131,7 +131,7 @@ export default async function DriverTripsPage() {
             </thead>
             <tbody className="divide-y divide-base-200/50">
               {trips.length > 0 ? (
-                trips.map((trip) => (
+                trips.map((trip: any) => (
                   <tr key={trip.id} className="hover:bg-primary/5 transition-colors group">
                     <td className="px-6 py-5">
                       <div className="text-sm font-semibold text-base-content">

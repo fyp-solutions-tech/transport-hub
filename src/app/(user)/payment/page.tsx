@@ -50,7 +50,7 @@ export default async function PaymentPage() {
 
     rides = ridesData;
     balance = Number(wallet?.balance || 0);
-    totalSpent = rides.reduce((s, r) => s + Number(r.fare ?? 0), 0);
+    totalSpent = rides.reduce((s: number, r: any) => s + Number(r.fare ?? 0), 0);
 
     if (rides.length > 0) {
       const latest = rides[0];
@@ -59,7 +59,7 @@ export default async function PaymentPage() {
         label: `${latest.pickupAddress.split(",")[0]} → ${latest.dropoffAddress.split(",")[0]} • Recent`,
       };
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error("Payment page error:", err);
   }
 
@@ -163,13 +163,13 @@ export default async function PaymentPage() {
           <table className="w-full text-left border-collapse">
             <thead className="bg-slate-50 border-b border-slate-100">
               <tr>
-                {["Date", "Ride Details", "Method", "Amount", "Status"].map((h) => (
-                  <th key={h} className="px-6 py-4 text-[14px] font-semibold text-slate-500 uppercase tracking-wider text-[11px]">{h}</th>
+                {["Date", "Ride Details", "Method", "Amount", "Status"].map((h: any) => (
+                  <th key={h} className="px-6 py-4 text-[14px] font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
-              {rides.length > 0 ? rides.slice(0, 10).map((ride) => (
+            <tbody className="divide-y divide-slate-50">    
+              {rides.length > 0 ? rides.slice(0, 10).map((ride: any) => (
                 <tr key={ride.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-6 py-4 text-sm text-[#111c2d]">
                     {new Date(ride.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
@@ -213,13 +213,13 @@ export default async function PaymentPage() {
 
       {/* ── Promo Banners ─────────────────────────── */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="relative h-48 rounded-2xl overflow-hidden group bg-gradient-to-r from-blue-900 to-blue-700">
+        <div className="relative h-48 rounded-2xl overflow-hidden group bg-linear-to-r from-blue-900 to-blue-700">
           <div className="absolute inset-0 flex flex-col justify-center px-8">
             <h3 className="text-white text-xl font-bold mb-2">Safe &amp; Encrypted</h3>
             <p className="text-blue-100 text-sm max-w-xs">Your financial data is protected by bank-grade 256-bit SSL encryption at all times.</p>
           </div>
         </div>
-        <div className="relative h-48 rounded-2xl overflow-hidden group bg-gradient-to-r from-slate-800 to-slate-700">
+        <div className="relative h-48 rounded-2xl overflow-hidden group bg-linear-to-r from-slate-800 to-slate-700">
           <div className="absolute inset-0 flex flex-col justify-center px-8">
             <h3 className="text-white text-xl font-bold mb-2">Travel Rewards</h3>
             <p className="text-slate-100 text-sm max-w-xs">Earn 5% back in Skyline credits for every ride paid with your linked card.</p>

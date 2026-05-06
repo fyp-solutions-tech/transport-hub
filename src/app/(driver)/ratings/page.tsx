@@ -47,7 +47,7 @@ export default async function DriverRatingsPage() {
   ]
 
   const avgRating = ratings.length > 0
-    ? (ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length).toFixed(1)
+    ? (ratings.reduce((sum: number, r: Rating) => sum + r.rating, 0) / ratings.length).toFixed(1)
     : '0.0'
 
   return (
@@ -149,7 +149,7 @@ export default async function DriverRatingsPage() {
                 {/* Categories */}
                 {rating.categories.length > 0 && (
                   <div className="flex gap-1.5 flex-wrap mb-2">
-                    {rating.categories.map(cat => (
+                    {rating.categories.map((cat: string) => (
                       <span key={cat} className="badge badge-info badge-sm">
                         {cat}
                       </span>

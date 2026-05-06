@@ -43,26 +43,26 @@ export default async function DriverDashboardPage() {
       orderBy: { createdAt: 'desc' }
     });
 
-    const completed = all.filter(r => r.status === "COMPLETED");
+    const completed = all.filter((r: any) => r.status === "COMPLETED");
     totalTrips = completed.length;
     todayEarnings = completed
-      .filter((r) => new Date(r.createdAt) >= todayStart)
-      .reduce((s: number, r) => s + Number(r.fare ?? 0), 0);
+      .filter((r: any) => new Date(r.createdAt) >= todayStart)
+      .reduce((s: number, r: any) => s + Number(r.fare ?? 0), 0);
     weeklyEarnings = completed
-      .filter((r) => new Date(r.createdAt) >= weekStart)
-      .reduce((s: number, r) => s + Number(r.fare ?? 0), 0);
+      .filter((r: any) => new Date(r.createdAt) >= weekStart)
+      .reduce((s: number, r: any) => s + Number(r.fare ?? 0), 0);
 
-    const rated = completed.filter((r) => r.rating != null);
+    const rated = completed.filter((r: any) => r.rating != null);
     if (rated.length > 0) {
-      avgRating = rated.reduce((s: number, r) => s + (r.rating ?? 0), 0) / rated.length;
+      avgRating = rated.reduce((s: number, r: any) => s + (r.rating ?? 0), 0) / rated.length;
     }
 
     // Recent 5 rides
-    recentHistory = all.slice(0, 5).map(r => ({
+    recentHistory = all.slice(0, 5).map((r: any) => ({
       id: r.id,
       passenger: { 
         name: r.passenger?.name || "Passenger", 
-        initials: (r.passenger?.name || "P").split(" ").map(n => n[0]).join("") 
+        initials: (r.passenger?.name || "P").split(" ").map((n: any) => n[0]).join("") 
       },
       time: r.createdAt.toISOString(),
       date: r.createdAt.toISOString(),
@@ -184,7 +184,7 @@ export default async function DriverDashboardPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-base-200/60">
-                {["Passenger", "Time", "Destination", "Amount", "Status"].map((h, i) => (
+                {["Passenger", "Time", "Destination", "Amount", "Status"].map((h: string, i: number) => (
                   <th
                     key={h}
                     className={`px-6 py-4 text-xs font-black text-base-content/40 uppercase tracking-widest ${i === 3 ? "text-right" : i === 4 ? "text-center" : ""}`}
@@ -196,7 +196,7 @@ export default async function DriverDashboardPage() {
             </thead>
             <tbody className="divide-y divide-base-200">
               {recentHistory.length > 0 ? (
-                recentHistory.map((row) => (
+                recentHistory.map((row: any) => (
                   <tr key={row.id} className="hover:bg-base-200/40 transition-colors">
                     {/* Passenger */}
                     <td className="px-6 py-4">

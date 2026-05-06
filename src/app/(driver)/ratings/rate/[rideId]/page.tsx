@@ -63,7 +63,7 @@ export default function RateRidePage() {
       <div className="card bg-base-100 border border-base-200">
         <div className="card-body items-center py-8">
           <div className="flex gap-2 mb-4">
-            {[1, 2, 3, 4, 5].map((star) => (
+            {[1, 2, 3, 4, 5].map((star: any) => (
               <button
                 key={star}
                 onClick={() => setRating(star)}
@@ -95,7 +95,7 @@ export default function RateRidePage() {
             </div>
             <textarea
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={(e: any) => setComment(e.target.value)}
               className="textarea textarea-bordered h-24"
               placeholder="Share your experience with this rider..."
               maxLength={500}

@@ -78,22 +78,22 @@ export function DashboardContent({ firstName, initialRides }: DashboardContentPr
   const map = useMap();
 
   const avgRating = useMemo(() => {
-    const ratings = initialRides.filter((r) => r.rating != null).map((r) => r.rating!);
+    const ratings = initialRides.filter((r: any) => r.rating != null).map((r: any) => r.rating!);
     return ratings.length > 0
-      ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+      ? (ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length).toFixed(1)
       : "—";
   }, [initialRides]);
 
   useEffect(() => {
     if (!("geolocation" in navigator)) return;
     watchId.current = navigator.geolocation.watchPosition(
-      (position) => {
+      (position: any) => {
         const { latitude, longitude } = position.coords;
         const coords = { lat: latitude, lng: longitude };
         const currentLive = useBookingStore.getState().liveLocation;
         setLiveLocation({ ...coords, address: currentLive?.address || "Detecting address..." });
       },
-      (error) => {
+      (error: any) => {
         if (error.code === 2 || error.code === 3) return;
         if (error.code === error.PERMISSION_DENIED) {
           toast.error("Location access denied.");
@@ -122,7 +122,7 @@ export function DashboardContent({ firstName, initialRides }: DashboardContentPr
   const handleRefreshLocation = () => {
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      (pos: any) => {
         const { latitude, longitude } = pos.coords;
         setLiveLocation({ lat: latitude, lng: longitude, address: "Detecting address..." });
         if (map) map.panTo({ lat: latitude, lng: longitude });
@@ -225,7 +225,7 @@ export function DashboardContent({ firstName, initialRides }: DashboardContentPr
         <section className="space-y-3">
           <h3 className="text-[14px] font-semibold text-slate-500 uppercase tracking-wider">Saved Places</h3>
           <div className="flex flex-wrap gap-3">
-            {savedPlaces.length > 0 ? savedPlaces.slice(0, 2).map((place, i) => (
+            {savedPlaces.length > 0 ? savedPlaces.slice(0, 2).map((place: any, i: number) => (
               <button key={i} className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all">
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
                   {i === 0 ? <MdBookmark className="text-sm" /> : <MdWork className="text-sm" />}
@@ -286,7 +286,7 @@ export function DashboardContent({ firstName, initialRides }: DashboardContentPr
               { lat: liveLocation.lat + 0.002, lng: liveLocation.lng + 0.002 },
               { lat: liveLocation.lat - 0.0015, lng: liveLocation.lng + 0.0025 },
               { lat: liveLocation.lat + 0.003, lng: liveLocation.lng - 0.001 },
-            ].map((pos, i) => (
+            ].map((pos: any, i: number) => (
               <AdvancedMarker key={i} position={pos}>
                 <div className="bg-white p-1 rounded-lg shadow-xl border border-gray-100">
                   <MdDirectionsCar className="text-gray-800 text-lg" />
@@ -366,11 +366,11 @@ export function DashboardContent({ firstName, initialRides }: DashboardContentPr
 
           {initialRides.length > 0 ? (
             <div className="bg-white rounded-xl shadow-sm border border-slate-100 divide-y divide-slate-100">
-              {initialRides.slice(0, 3).map((ride) => (
+              {initialRides.slice(0, 3).map((ride: any) => (
                 <Link
                   key={ride.id}
                   href={`/rides/${ride.id}`}
-                  className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors block"
+                  className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors"
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center">

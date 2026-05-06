@@ -66,7 +66,7 @@ export default function DashboardContent({ initialName }: { initialName: string 
       toast.success("Ride accepted! Starting navigation...");
       setRide(response);
       setStatus("ACCEPTED");
-      setIncomingRides(incomingRides.filter(r => r.id !== rideId));
+      setIncomingRides(incomingRides.filter((r: any) => r.id !== rideId));
     } catch (err: any) {
       toast.error(err.message || "Failed to accept ride");
     } finally {

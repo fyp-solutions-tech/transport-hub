@@ -129,7 +129,7 @@ export default function DriverVehiclePage() {
             { label: "Driver's License", status: "verified", expiry: "Mar 2027" },
             { label: "Insurance", status: "expiring", expiry: "May 2026" },
             { label: "Fitness Certificate", status: "pending", expiry: "—" },
-          ].map((doc, i) => (
+          ].map((doc: any, i: number) => (
             <div key={doc.label}>
               {i !== 0 && <div className="divider my-0" />}
               <div className="flex items-center gap-3 py-2">
@@ -163,7 +163,7 @@ export default function DriverVehiclePage() {
               { label: "Model", id: "vehicle-model", key: "vehicleModel" },
               { label: "Year", id: "vehicle-year", key: "vehicleYear" },
               { label: "Color", id: "vehicle-color", key: "vehicleColor" },
-            ].map((f) => (
+            ].map((f: any) => (
               <div key={f.id} className="form-control">
                 <label className="label py-1">
                   <span className="label-text text-xs font-medium">{f.label}</span>
@@ -172,7 +172,7 @@ export default function DriverVehiclePage() {
                   id={f.id}
                   type="text"
                   value={data[f.key as keyof VehicleData]}
-                  onChange={(e) => setData({ ...data, [f.key]: e.target.value })}
+                  onChange={(e: any) => setData({ ...data, [f.key]: e.target.value })}
                   className="input input-bordered input-sm"
                 />
               </div>
@@ -187,7 +187,7 @@ export default function DriverVehiclePage() {
                 id="vehicle-plate"
                 type="text"
                 value={data.vehiclePlate}
-                onChange={(e) => setData({ ...data, vehiclePlate: e.target.value })}
+                onChange={(e: any) => setData({ ...data, vehiclePlate: e.target.value })}
                 className="input input-bordered input-sm"
               />
             </div>
@@ -198,8 +198,8 @@ export default function DriverVehiclePage() {
               <select
                 className="select select-bordered select-sm"
                 value={data.vehicleType}
-                onChange={(e) => setData({ ...data, vehicleType: e.target.value })}
-              >
+                onChange={(e: any) => setData({ ...data, vehicleType: e.target.value })}
+                >
                 <option value="economy">Economy</option>
                 <option value="comfort">Comfort</option>
                 <option value="moto">Moto</option>

@@ -74,7 +74,7 @@ export default async function SupportPage() {
             <h2 className="text-xl font-bold text-base-content">Knowledge Hub</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {knowledgeHub.map((item, i) => (
+            {knowledgeHub.map((item: any, i) => (
               <Link
                 key={i}
                 href="#"

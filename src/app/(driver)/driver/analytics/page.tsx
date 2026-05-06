@@ -44,10 +44,10 @@ export default async function DriverEarningsPage() {
       take: 10,
     });
 
-    const todayEarnings = todayRides.reduce((sum, r) => sum + (r.fare || 0), 0);
-    const weekEarnings = weekRides.reduce((sum, r) => sum + (r.fare || 0), 0);
-    const monthEarnings = monthRides.reduce((sum, r) => sum + (r.fare || 0), 0);
-    const totalEarnings = allRides.reduce((sum, r) => sum + (r.fare || 0), 0);
+    const todayEarnings = todayRides.reduce((sum: number, r: any) => sum + (r.fare || 0), 0);
+    const weekEarnings = weekRides.reduce((sum: number, r: any) => sum + (r.fare || 0), 0);
+    const monthEarnings = monthRides.reduce((sum: number, r: any) => sum + (r.fare || 0), 0);
+    const totalEarnings = allRides.reduce((sum: number, r: any) => sum + (r.fare || 0), 0);
     const avgPerTrip = allRides.length > 0 ? (totalEarnings / allRides.length).toFixed(2) : "0.00";
 
     stats = {
@@ -205,7 +205,7 @@ export default async function DriverEarningsPage() {
         </div>
 
         <div className="relative h-64 w-full flex items-end justify-between gap-4 pt-4">
-          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, i) => (
+          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day: any, i: number) => (
             <div key={day} className="flex flex-col items-center gap-2 w-full">
               <div className="relative w-full h-48 flex items-end justify-center">
                 <div className="w-12 bg-primary/10 rounded-t-lg h-[60%] transition-all hover:bg-primary/20"></div>
@@ -245,7 +245,7 @@ export default async function DriverEarningsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-base-200/50">
-              {transactions.map((tx) => (
+              {transactions.map((tx: any) => (
                 <tr key={tx.id} className="hover:bg-base-200/50 transition-colors">
                   <td className="px-6 py-4">
                     <p className="text-sm font-semibold text-base-content">

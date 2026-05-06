@@ -182,7 +182,7 @@ export default function BookPage() {
   const handleRefreshLocation = () => {
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      (pos: any) => {
         const { latitude, longitude } = pos.coords;
         setLiveLocation({ lat: latitude, lng: longitude, address: "Detecting address..." });
         if (map) map.panTo({ lat: latitude, lng: longitude });
@@ -307,11 +307,11 @@ export default function BookPage() {
             )}
           </div>
 
-          <div className="bg-[#e7eeff] p-6 rounded-2xl flex gap-4">
+          <div className="bg-surface-container p-6 rounded-2xl flex gap-4">
             <MdInfo className="text-blue-600 text-2xl shrink-0 mt-1" />
             <div>
               <h4 className="text-[14px] font-bold text-blue-700 mb-1">Travel Tip</h4>
-              <p className="text-[12px] text-[#54647a] leading-relaxed">
+              <p className="text-[12px] text-on-secondary-container leading-relaxed">
                 Save your home and work addresses in <span className="font-bold underline cursor-pointer" onClick={() => router.push('/saved-places')}>Saved Places</span> for even faster bookings next time.
               </p>
             </div>
@@ -334,7 +334,7 @@ export default function BookPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-3">
-                {VEHICLES.map((v) => {
+                {VEHICLES.map((v: any) => {
                   const vFare = distance ? computeFare(v.id, distance) : null;
                   const isSelected = selectedVehicle === v.id;
                   return (

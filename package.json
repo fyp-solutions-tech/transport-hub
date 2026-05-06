@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "socket": "cross-env NODE_OPTIONS=\"--experimental-strip-types\" node src/lib/standalone-socket.ts",
     "simulate:ride": "cross-env NODE_OPTIONS=\"--experimental-strip-types\" node scripts/simulate-ride.ts",

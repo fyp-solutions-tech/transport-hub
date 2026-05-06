@@ -46,7 +46,7 @@ export async function POST(
       select: { rating: true },
     });
 
-    const averageRating = driverReviews.reduce((acc, curr) => acc + curr.rating, 0) / driverReviews.length;
+    const averageRating = driverReviews.reduce((acc: any, curr: any) => acc + curr.rating, 0) / driverReviews.length;
 
     await prisma.user.update({
       where: { id: ride.driverId },

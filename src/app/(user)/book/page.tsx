@@ -79,8 +79,9 @@ export default function BookPage() {
   // ── Reverse geocode live location for label ─────────
   useEffect(() => {
     if (!liveLocation || liveLocation.address !== "Detecting address...") return;
+    if (!places || !window.google || !window.google.maps || !window.google.maps.Geocoder) return;
 
-    const geocoder = new (window as any).google.maps.Geocoder();
+    const geocoder = new window.google.maps.Geocoder();
     geocoder.geocode(
       { location: { lat: liveLocation.lat, lng: liveLocation.lng } },
       (results: any, status: any) => {
@@ -92,7 +93,7 @@ export default function BookPage() {
         }
       }
     );
-  }, [liveLocation?.lat, liveLocation?.lng]);
+  }, [liveLocation?.lat, liveLocation?.lng, places]);
 
   // ── Auto-set pickup from GPS on first load ──────────
   useEffect(() => {
@@ -153,9 +154,10 @@ export default function BookPage() {
     const ref = type === "pickup" ? pickupAutocompleteRef : dropoffAutocompleteRef;
     const value = ref.current?.value;
     if (!value || (type === "pickup" ? pickup : dropoff)) return;
+    if (!places || !window.google || !window.google.maps || !window.google.maps.Geocoder) return;
 
     try {
-      const geocoder = new (window as any).google.maps.Geocoder();
+      const geocoder = new window.google.maps.Geocoder();
       const response = await new Promise<any[]>((resolve, reject) => {
         geocoder.geocode(
           { address: value, componentRestrictions: { country: "pk" } },

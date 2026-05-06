@@ -25,6 +25,7 @@ import {
   Map,
   AdvancedMarker,
   useMap,
+  useMapsLibrary,
 } from "@vis.gl/react-google-maps";
 
 interface Ride {
@@ -76,6 +77,7 @@ export function DashboardContent({ firstName, initialRides }: DashboardContentPr
   const [isLocating, setIsLocating] = useState(false);
   const watchId = useRef<number | null>(null);
   const map = useMap();
+  const placesLib = useMapsLibrary("places");
 
   const avgRating = useMemo(() => {
     const ratings = initialRides.filter((r: any) => r.rating != null).map((r: any) => r.rating!);
@@ -108,7 +110,9 @@ export function DashboardContent({ firstName, initialRides }: DashboardContentPr
 
   useEffect(() => {
     if (!liveLocation || liveLocation.address !== "Detecting address...") return;
-    const geocoder = new (window as any).google.maps.Geocoder();
+    if (!placesLib || !window.google || !window.google.maps || !window.google.maps.Geocoder) return;
+    
+    const geocoder = new window.google.maps.Geocoder();
     geocoder.geocode(
       { location: { lat: liveLocation.lat, lng: liveLocation.lng } },
       (results: any, status: any) => {
@@ -117,7 +121,7 @@ export function DashboardContent({ firstName, initialRides }: DashboardContentPr
         }
       }
     );
-  }, [liveLocation?.lat, liveLocation?.lng]);
+  }, [liveLocation?.lat, liveLocation?.lng, placesLib]);
 
   const handleRefreshLocation = () => {
     setIsLocating(true);

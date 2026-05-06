@@ -24,9 +24,9 @@ export default async function DriverProfilePage() {
         select: { fare: true, rating: true },
       });
 
-      const totalEarnings = rides.reduce((sum, r) => sum + (r.fare || 0), 0);
-      const ratings = rides.filter(r => r.rating != null).map(r => r.rating!);
-      const avgRating = ratings.length > 0 ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : "—";
+      const totalEarnings = rides.reduce((sum: number, r: any) => sum + (r.fare || 0), 0);
+      const ratings = rides.filter((r: any) => r.rating != null).map((r: any) => r.rating!);
+      const avgRating = ratings.length > 0 ? (ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length).toFixed(1) : "—";
 
       stats = {
         totalTrips: rides.length.toString(),
@@ -34,7 +34,7 @@ export default async function DriverProfilePage() {
         totalEarnings: `PKR ${Math.round(totalEarnings)}`,
       };
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error("Error loading driver profile:", err);
     error = "Failed to load profile. Please try again later.";
   }

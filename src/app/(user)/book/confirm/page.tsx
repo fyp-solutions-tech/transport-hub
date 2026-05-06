@@ -88,7 +88,7 @@ export default function BookConfirmPage() {
     return Math.round(fare.total * LOAN_INTEREST_RATE);
   }, [loanApplied, fare]);
 
-  const vehicleDef = VEHICLES.find((v: VehicleCategory) => v.id === vehicle);
+  const vehicleDef = VEHICLES.find((v: any) => v.id === vehicle);
 
   const vehicleIcon = (icon: string) => {
     switch (icon) {
@@ -100,7 +100,7 @@ export default function BookConfirmPage() {
   };
 
   const handlePaymentSelect = (methodId: string) => {
-    const selected = PAYMENT_OPTIONS.find((m) => m.id === methodId);
+    const selected = PAYMENT_OPTIONS.find((m: any) => m.id === methodId);
     if (!selected) return;
 
     setPaymentMethod(selected.id);
@@ -144,7 +144,7 @@ export default function BookConfirmPage() {
 
   if (!pickup || !dropoff) return null;
 
-  const currentPayment = PAYMENT_OPTIONS.find(m: any => m.id === paymentMethod) || PAYMENT_OPTIONS[0];
+  const currentPayment = PAYMENT_OPTIONS.find((m: any) => m.id === paymentMethod) || PAYMENT_OPTIONS[0];
 
   return (
     <div className="max-w-2xl mx-auto space-y-8 pb-12">

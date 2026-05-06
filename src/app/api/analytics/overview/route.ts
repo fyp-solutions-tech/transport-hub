@@ -85,7 +85,7 @@ export async function GET() {
         weeklyRevenue: Array(7).fill(0).map((_, i) => {
           const day = new Date(startOfWeek)
           day.setDate(day.getDate() + i)
-          const dayRides = weekRides.filter(r => 
+          const dayRides = weekRides.filter((r: any) => 
             new Date(r.createdAt).toDateString() === day.toDateString()
           )
           return {

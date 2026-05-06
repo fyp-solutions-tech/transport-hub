@@ -20,7 +20,7 @@ export default function HomePage() {
       </header>
 
       {/* Main Content */}
-      <main className="grow w-full max-w-[1280px] mx-auto px-4 md:px-8 lg:px-16 flex flex-col gap-[64px] pt-8 md:pt-12">
+      <main className="grow w-full max-w-[1280px] mx-auto px-4 md:px-8 lg:px-16 flex flex-col gap-[64px] pt-22 md:pt-28">
         {/* 1. Hero Section */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="flex flex-col gap-6">

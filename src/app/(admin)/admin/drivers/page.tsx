@@ -27,7 +27,7 @@ export default async function AdminDriversPage() {
 
   const stats = [
     { label: "Total Fleet", value: displayDrivers.length.toString(), icon: <MdLocalTaxi />, color: "text-primary", bg: "bg-primary/10" },
-    { label: "Online Now", value: displayDrivers.filter(d => d.isOnline).length.toString(), icon: <MdRadioButtonChecked />, color: "text-success", bg: "bg-success/10" },
+    { label: "Online Now", value: displayDrivers.filter((d: any) => d.isOnline).length.toString(), icon: <MdRadioButtonChecked />, color: "text-success", bg: "bg-success/10" },
     { label: "Avg Rating", value: "4.8", icon: <MdStar />, color: "text-secondary", bg: "bg-secondary/10" },
     { label: "Pending Docs", value: "3", icon: <MdFilePresent />, color: "text-error", bg: "bg-error/10" },
   ];
@@ -54,7 +54,7 @@ export default async function AdminDriversPage() {
 
       {/* Fleet Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((s, i) => (
+        {stats.map((s: any, i) => (
           <div key={i} className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/30 hover:shadow-md transition-all">
             <div className="flex items-center gap-4">
               <div className={`w-10 h-10 ${s.bg} ${s.color} rounded-xl flex items-center justify-center`}>

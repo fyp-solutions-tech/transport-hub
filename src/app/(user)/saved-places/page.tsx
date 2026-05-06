@@ -25,9 +25,9 @@ export default async function SavedPlacesPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  const home = places.find(p => p.type === "HOME");
-  const work = places.find(p => p.type === "WORK");
-  const others = places.filter(p => p.type === "OTHER");
+  const home = places.find((p: any) => p.type === "HOME");
+  const work = places.find((p: any) => p.type === "WORK");
+  const others = places.filter((p: any) => p.type === "OTHER");
 
   return (
     <div className="space-y-8 pb-12">
@@ -106,7 +106,7 @@ export default async function SavedPlacesPage() {
             ].map(({ icon: Icon, name, address }) => (
               <div key={name} className="bg-white rounded-xl p-6 shadow-[0_20px_40px_rgba(37,99,235,0.05)] hover:shadow-[0_10px_30px_rgba(37,99,235,0.1)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col group">
                 <div className="flex items-start justify-between">
-                  <div className="w-10 h-10 rounded-lg bg-[#e7eeff] text-blue-600 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-surface-container text-blue-600 flex items-center justify-center">
                     <Icon className="text-lg" />
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -160,10 +160,10 @@ export default async function SavedPlacesPage() {
               </button>
             </form>
 
-            <div className="mt-8 p-4 bg-[#e7eeff] rounded-lg">
+            <div className="mt-8 p-4 bg-surface-container rounded-lg">
               <div className="flex gap-3">
                 <MdInfo className="text-blue-600 shrink-0 mt-0.5" />
-                <p className="text-xs text-[#54647a] leading-relaxed">
+                <p className="text-xs text-on-secondary-container leading-relaxed">
                   Saved places help our smart algorithm predict your travel needs and offer faster booking options during rush hour.
                 </p>
               </div>
@@ -175,7 +175,7 @@ export default async function SavedPlacesPage() {
       {/* Map Preview */}
       <section>
         <div className="bg-white rounded-xl overflow-hidden shadow-[0_20px_40px_rgba(37,99,235,0.05)] h-64 relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-slate-100 flex items-center justify-center">
+          <div className="absolute inset-0 bg-linear-to-br from-blue-100 to-slate-100 flex items-center justify-center">
             <div className="text-center space-y-2">
               <MdDirectionsCar className="text-5xl text-blue-200 mx-auto" />
               <p className="text-slate-400 text-sm font-medium">Map preview will appear here</p>

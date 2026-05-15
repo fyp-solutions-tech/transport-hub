@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   MdDirectionsCar,
   MdGpsFixed,
@@ -42,6 +43,7 @@ interface Ride {
 interface DashboardContentProps {
   firstName: string;
   initialRides: Ride[];
+  initialPlaces?: any[];
 }
 
 const vehicleOptions = [
@@ -53,7 +55,7 @@ const vehicleOptions = [
 const paymentMethods = [
   { id: "cash", label: "Cash", sub: "Pay on arrival" },
   { id: "card", label: "Card", sub: "Visa •••• 4242" },
-  { id: "loan", label: "Skyline Loan", sub: "Buy Now, Pay Later" },
+  { id: "loan", label: "TransportHub Loan", sub: "Buy Now, Pay Later" },
 ];
 
 const statusColors: Record<string, string> = {
@@ -66,11 +68,14 @@ const statusColors: Record<string, string> = {
   IN_PROGRESS: "bg-purple-50 text-purple-600",
 };
 
-export function DashboardContent({ firstName, initialRides }: DashboardContentProps) {
+export function DashboardContent({ firstName, initialRides, initialPlaces = [] }: DashboardContentProps) {
+  const router = useRouter();
   const { activeRideId, status: activeStatus } = useRideTrackingStore();
   const { activeLoan } = usePaymentStore();
-  const { savedPlaces } = useProfileStore();
-  const { liveLocation, setLiveLocation } = useBookingStore();
+  const { liveLocation, setLiveLocation, setDropoff } = useBookingStore();
+
+  const homePlace = initialPlaces.find((p) => p.type === "HOME");
+  const workPlace = initialPlaces.find((p) => p.type === "WORK");
 
   const [selectedVehicle, setSelectedVehicle] = useState("economy");
   const [selectedPayment, setSelectedPayment] = useState("card");
@@ -136,6 +141,49 @@ export function DashboardContent({ firstName, initialRides }: DashboardContentPr
       () => { setIsLocating(false); toast.error("Could not refresh location"); },
       { enableHighAccuracy: true, timeout: 20000 }
     );
+  };
+
+  const handlePlaceClick = async (place: any) => {
+    if (!place?.address) {
+      router.push("/saved-places");
+      return;
+    }
+    
+    if (!window.google || !window.google.maps || !window.google.maps.Geocoder) {
+      toast.error("Map service is still loading, please wait.");
+      return;
+    }
+
+    toast.loading("Locating...", { id: "geocode" });
+    const geocoder = new window.google.maps.Geocoder();
+    
+    try {
+      const response = await new Promise<any[]>((resolve, reject) => {
+        geocoder.geocode(
+          { address: place.address, componentRestrictions: { country: "pk" } },
+          (results: any, status: any) => {
+            if (status === "OK" && results) resolve(results);
+            else reject(new Error(status));
+          }
+        );
+      });
+
+      if (response[0]) {
+        const { lat, lng } = response[0].geometry.location;
+        setDropoff({
+          lat: lat(),
+          lng: lng(),
+          address: response[0].formatted_address || place.address,
+        });
+        toast.dismiss("geocode");
+        router.push("/book");
+      } else {
+        throw new Error("No results");
+      }
+    } catch (err) {
+      toast.error("Could not find exact location, please search manually", { id: "geocode" });
+      router.push("/book");
+    }
   };
 
   return (
@@ -229,38 +277,30 @@ export function DashboardContent({ firstName, initialRides }: DashboardContentPr
         <section className="space-y-3">
           <h3 className="text-[14px] font-semibold text-slate-500 uppercase tracking-wider">Saved Places</h3>
           <div className="flex flex-wrap gap-3">
-            {savedPlaces.length > 0 ? savedPlaces.slice(0, 2).map((place: any, i: number) => (
-              <button key={i} className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all">
-                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                  {i === 0 ? <MdBookmark className="text-sm" /> : <MdWork className="text-sm" />}
-                </div>
-                <div className="text-left">
-                  <p className="text-[14px] font-semibold">{place.label || `Place ${i + 1}`}</p>
-                  <p className="text-[11px] text-slate-400 truncate max-w-[120px]">{place.address || "Saved location"}</p>
-                </div>
-              </button>
-            )) : (
-              <>
-                <button className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                    <MdBookmark className="text-sm" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[14px] font-semibold">Home</p>
-                    <p className="text-[11px] text-slate-400">Add your home address</p>
-                  </div>
-                </button>
-                <button className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all">
-                  <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
-                    <MdWork className="text-sm" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[14px] font-semibold">Work</p>
-                    <p className="text-[11px] text-slate-400">Add your work address</p>
-                  </div>
-                </button>
-              </>
-            )}
+            <button 
+              onClick={() => handlePlaceClick(homePlace)} 
+              className="flex flex-1 items-center gap-3 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all"
+            >
+              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                <MdBookmark className="text-sm" />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="text-[14px] font-semibold text-[#111c2d]">Home</p>
+                <p className="text-[11px] text-slate-400 truncate w-full">{homePlace?.address || "Add your home address"}</p>
+              </div>
+            </button>
+            <button 
+              onClick={() => handlePlaceClick(workPlace)} 
+              className="flex flex-1 items-center gap-3 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all"
+            >
+              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 shrink-0">
+                <MdWork className="text-sm" />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="text-[14px] font-semibold text-[#111c2d]">Work</p>
+                <p className="text-[11px] text-slate-400 truncate w-full">{workPlace?.address || "Add your work address"}</p>
+              </div>
+            </button>
           </div>
         </section>
       </div>

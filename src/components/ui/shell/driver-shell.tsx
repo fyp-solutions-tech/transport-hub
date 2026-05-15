@@ -84,30 +84,6 @@ export default async function DriverShell({
               </Link>
             </div>
 
-            <div className="flex items-center gap-3 mb-8 px-2">
-              <div className="avatar placeholder">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  {user.image ? (
-                    <Image
-                      src={user.image}
-                      alt={user.name}
-                      width={40}
-                      height={40}
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <span className="text-primary font-bold text-lg">
-                      {user.name.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div>
-                <div className="font-bold text-base-content">{user.name}</div>
-                <div className="text-xs text-secondary">Gold Tier</div>
-              </div>
-            </div>
-
             <nav className="flex flex-col gap-2 p-0">
               {navItems.map((item) => (
                 <Link
@@ -123,9 +99,23 @@ export default async function DriverShell({
           </div>
 
           <div className="absolute bottom-8 left-0 w-full px-6">
-            <button className="w-full py-3 bg-base-200 text-base-content rounded-xl text-sm font-bold border border-base-300 hover:bg-base-100 transition-colors">
-              Driver Portal
-            </button>
+            <div className="avatar placeholder">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                {user.image ? (
+                  <Image
+                    src={user.image}
+                    alt={user.name}
+                    width={40}
+                    height={40}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <span className="text-primary font-bold text-lg">
+                    {user.name.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         </aside>
       </div>

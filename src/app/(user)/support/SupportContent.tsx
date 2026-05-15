@@ -16,7 +16,7 @@ export default function SupportContent() {
 
     setIsSubmitting(true);
     try {
-      await api.post("/support/ticket", {
+      await api.post("/support/tickets", {
         subject,
         message,
         category: subject,

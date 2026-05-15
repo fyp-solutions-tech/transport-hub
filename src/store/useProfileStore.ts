@@ -17,10 +17,7 @@ export const useProfileStore = create<ProfileState>()(
     (set) => ({
       name: '',
       avatar: null,
-      savedPlaces: [
-        { id: '1', label: 'Home', address: 'Model Town, Lahore' },
-        { id: '2', label: 'Office', address: 'Gulberg III, Lahore' },
-      ],
+      savedPlaces: [],
 
       updateName: (name) => set({ name }),
       updateAvatar: (avatar) => set({ avatar }),

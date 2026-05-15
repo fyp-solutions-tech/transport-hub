@@ -5,6 +5,7 @@ import { MdErrorOutline } from "react-icons/md"
 
 export default async function UserDashboardPage() {
   let rides: any[] = []
+  let places: any[] = []
   let error: string | null = null
   let firstName: string = ""
 
@@ -32,6 +33,10 @@ export default async function UserDashboardPage() {
       fare: Number(ride.fare),
       createdAt: new Date(ride.createdAt).toISOString(),
     }))
+
+    places = await prisma.savedPlace.findMany({
+      where: { userId: session.user.id },
+    })
   } catch (err) {
     console.error('Failed to load dashboard:', err)
     error = "Failed to load your dashboard. Please try again later."
@@ -57,5 +62,5 @@ export default async function UserDashboardPage() {
     )
   }
 
-  return <DashboardContent firstName={firstName} initialRides={rides} />
+  return <DashboardContent firstName={firstName} initialRides={rides} initialPlaces={places} />
 }

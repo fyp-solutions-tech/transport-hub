@@ -1,8 +1,12 @@
 import { requireRole } from "@/lib/session";
 import SupportContent from "./SupportContent";
-import { MdQuiz, MdMail, MdLibraryBooks, MdMenuBook, MdVerifiedUser, MdPhone, MdChat, MdSentimentVerySatisfied, MdSentimentNeutral, MdSentimentVeryDissatisfied } from "react-icons/md";
+import SupportFeedback from "./SupportFeedback";
+import { 
+  MdQuiz, MdLibraryBooks, MdMenuBook, MdVerifiedUser, 
+  MdPhone, MdChat, MdExpandMore, MdChevronRight 
+} from "react-icons/md";
 
-export const metadata = { title: "Support Center | Skyline Hub" };
+export const metadata = { title: "Support Center | TransportHub" };
 
 export default async function SupportPage() {
   await requireRole("USER");
@@ -42,7 +46,7 @@ export default async function SupportPage() {
                 <details className="group">
                   <summary className="flex justify-between items-center p-6 cursor-pointer list-none">
                     <span className="text-[14px] font-semibold text-[#111c2d]">{faq.q}</span>
-                    <span className="material-symbols-outlined transition-transform duration-300 group-open:rotate-180 text-blue-600 select-none">expand_more</span>
+                    <MdExpandMore className="text-xl transition-transform duration-300 group-open:rotate-180 text-blue-600 select-none" />
                   </summary>
                   <div className="px-6 pb-6 text-[16px] text-on-surface-variant leading-relaxed">
                     {faq.a}
@@ -77,40 +81,14 @@ export default async function SupportPage() {
                   <h4 className="text-[14px] font-semibold text-[#111c2d]">{title}</h4>
                   <p className="text-[12px] text-[#434655]">{sub}</p>
                 </div>
-                <span className="material-symbols-outlined ml-auto text-slate-300 group-hover:text-blue-600 transition-colors">chevron_right</span>
+                <MdChevronRight className="ml-auto text-xl text-slate-300 group-hover:text-blue-600 transition-colors" />
               </div>
             ))}
           </div>
         </div>
 
         {/* Feedback */}
-        <div className="bg-blue-600/5 rounded-xl p-8 border border-blue-600/10">
-          <h3 className="text-[24px] font-semibold text-[#111c2d] mb-2">How are we doing?</h3>
-          <p className="text-[16px] text-[#434655] mb-6">Your feedback drives the evolution of Skyline Hub. Help us improve the journey.</p>
-          <div className="space-y-4">
-            <textarea
-              rows={4}
-              placeholder="Tell us about your recent experience..."
-              className="w-full bg-white border border-slate-200 rounded-lg p-4 text-[16px] focus:ring-2 focus:ring-blue-600 transition-all outline-none resize-none"
-            />
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
-                {[
-                  { icon: MdSentimentVerySatisfied, color: "text-yellow-500" },
-                  { icon: MdSentimentNeutral, color: "text-slate-400" },
-                  { icon: MdSentimentVeryDissatisfied, color: "text-slate-400" },
-                ].map(({ icon: Icon, color }, i) => (
-                  <button key={i} className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center hover:bg-white transition-colors">
-                    <Icon className={`text-xl ${color}`} />
-                  </button>
-                ))}
-              </div>
-              <button className="bg-blue-600 text-white px-6 py-2 rounded-lg text-[14px] font-semibold hover:opacity-90 transition-opacity">
-                Send Feedback
-              </button>
-            </div>
-          </div>
-        </div>
+        <SupportFeedback />
       </div>
 
       {/* Emergency Banner */}

@@ -17,8 +17,9 @@ import {
   MdClose,
   MdAddCard,
 } from "react-icons/md";
+import { AddPaymentButton, AddFundsButton } from "./PaymentActions";
 
-export const metadata = { title: "Payments & Wallet | Skyline Hub" };
+export const metadata = { title: "Payments & Wallet | TransportHub" };
 
 export default async function PaymentPage() {
   const { session } = await requireRole("USER");
@@ -67,9 +68,9 @@ export default async function PaymentPage() {
 
   const paymentMethods = [
     { id: "cash", label: "Cash on Delivery", sub: "Pay after arrival", icon: MdPayments, featured: false },
-    { id: "loan", label: "Skyline Flex Loan", sub: "Buy Now, Pay Later", icon: MdCalendarMonth, featured: true },
+    { id: "loan", label: "TransportHub Flex Loan", sub: "Buy Now, Pay Later", icon: MdCalendarMonth, featured: true },
     { id: "card", label: "Debit/Credit Card", sub: "Visa •••• 4242", icon: MdCreditCard, featured: false },
-    { id: "wallet", label: "Skyline Wallet", sub: "Balance Auto-deduct", icon: MdWallet, featured: false },
+    { id: "wallet", label: "TransportHub Wallet", sub: "Balance Auto-deduct", icon: MdWallet, featured: false },
   ];
 
   const txIcons: Record<string, any> = { flight: MdFlight, car: MdDirectionsCar, train: MdTrain, cancelled: MdClose };
@@ -93,8 +94,9 @@ export default async function PaymentPage() {
           <div className="text-4xl font-bold mb-2">{fmt(balance)}</div>
           <div className="flex items-center gap-2 text-sm text-blue-100">
             <MdTrendingUp className="text-sm" />
-            <span>Secured by SkylinePay</span>
+            <span>Secured by TransportPay</span>
           </div>
+          <AddFundsButton />
         </div>
 
         {/* Total Spent */}
@@ -124,10 +126,7 @@ export default async function PaymentPage() {
       <section className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-[32px] font-semibold leading-[1.3] text-[#111c2d]">Payment Methods</h2>
-          <button className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg text-[14px] font-semibold hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-500/20">
-            <MdAdd className="text-lg" />
-            Add Card
-          </button>
+          <AddPaymentButton />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {paymentMethods.map(({ id, label, sub, icon: Icon, featured }) => (
@@ -222,16 +221,14 @@ export default async function PaymentPage() {
         <div className="relative h-48 rounded-2xl overflow-hidden group bg-linear-to-r from-slate-800 to-slate-700">
           <div className="absolute inset-0 flex flex-col justify-center px-8">
             <h3 className="text-white text-xl font-bold mb-2">Travel Rewards</h3>
-            <p className="text-slate-100 text-sm max-w-xs">Earn 5% back in Skyline credits for every ride paid with your linked card.</p>
+            <p className="text-slate-100 text-sm max-w-xs">Earn 5% back in TransportHub credits for every ride paid with your linked card.</p>
           </div>
         </div>
       </section>
 
       {/* FAB */}
       <div className="fixed bottom-8 right-8 z-50 hidden md:block">
-        <button className="w-14 h-14 bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-blue-700 active:scale-95 transition-all">
-          <MdAddCard className="text-2xl" />
-        </button>
+        <AddPaymentButton isFab />
       </div>
     </div>
   );

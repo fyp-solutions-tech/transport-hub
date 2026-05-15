@@ -59,6 +59,9 @@ export default function UserShellMenu({
           <a href="/profile">Profile Settings</a>
         </li>
         <li>
+          <a href="/auth/driver" className="text-primary">Driver Portal</a>
+        </li>
+        <li>
           <button onClick={handleLogout} className="text-error">
             Sign out
           </button>

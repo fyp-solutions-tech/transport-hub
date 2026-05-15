@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import UserShellMenu from "@/components/ui/shell/user-shell-menu";
 import {
   MdDashboard,
   MdDirectionsCar,
@@ -48,7 +49,7 @@ export default function UserShell({
       <aside className="hidden md:flex w-64 h-screen fixed left-0 top-0 border-r border-slate-100 bg-white z-50 flex-col py-8 px-4">
         {/* Logo */}
         <div className="mb-8 px-4">
-          <h1 className="text-2xl font-black text-blue-600 leading-tight">Skyline Hub</h1>
+          <h1 className="text-2xl font-black text-blue-600 leading-tight">TransportHub</h1>
           <p className="text-[11px] font-medium text-slate-400 uppercase tracking-widest mt-1">
             Passenger Portal
           </p>
@@ -98,7 +99,7 @@ export default function UserShell({
         {/* Top App Bar */}
         <header className="sticky top-0 z-40 h-16 bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-[0_4px_20px_rgba(37,99,235,0.03)] flex justify-between items-center px-4 md:px-8">
           {/* Mobile brand */}
-          <span className="md:hidden text-lg font-black text-blue-600">Skyline Hub</span>
+          <span className="md:hidden text-lg font-black text-blue-600">TransportHub</span>
 
           {/* Search */}
           <div className="hidden md:flex flex-1 items-center max-w-md">
@@ -122,13 +123,7 @@ export default function UserShell({
               <MdHelpCenter className="text-xl" />
             </button>
             <div className="h-8 w-px bg-slate-100 mx-1 hidden md:block" />
-            <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-blue-100 bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shrink-0">
-              {user.image ? (
-                <Image src={user.image} alt={user.name} width={36} height={36} className="rounded-full object-cover" />
-              ) : (
-                <span>{user.name.charAt(0).toUpperCase()}</span>
-              )}
-            </div>
+            <UserShellMenu user={user} />
           </div>
         </header>
 

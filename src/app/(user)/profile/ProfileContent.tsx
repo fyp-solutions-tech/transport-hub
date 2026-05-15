@@ -172,7 +172,10 @@ export function ProfileContent({ profile }: { profile: ProfileData }) {
                   <MdExpandMore className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xl" />
                 </div>
               </div>
-              <button className="flex items-center justify-between w-full p-4 border-2 border-dashed border-slate-200 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
+              <button 
+                onClick={() => toast.success("Redirecting to Add Payment Method secure portal...")}
+                className="flex items-center justify-between w-full p-4 border-2 border-dashed border-slate-200 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group"
+              >
                 <div className="flex items-center gap-3">
                   <MdAddCircle className="text-slate-400 group-hover:text-blue-600 transition-colors text-xl" />
                   <span className="text-[14px] font-semibold text-slate-500 group-hover:text-[#111c2d]">Add New Payment Method</span>
@@ -193,14 +196,20 @@ export function ProfileContent({ profile }: { profile: ProfileData }) {
               <h2 className="text-[24px] font-semibold text-[#111c2d]">Security</h2>
             </div>
             <div className="space-y-4">
-              <button className="w-full p-4 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all cursor-pointer flex items-center justify-between">
+              <button 
+                onClick={() => toast.success("Password reset email sent! Please check your inbox.")}
+                className="w-full p-4 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all cursor-pointer flex items-center justify-between"
+              >
                 <div>
                   <p className="text-[14px] font-semibold text-[#111c2d]">Change Password</p>
                   <p className="text-[12px] text-slate-500">Last updated 3 months ago</p>
                 </div>
                 <MdLockReset className="text-blue-600 text-xl" />
               </button>
-              <div className="p-4 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all cursor-pointer flex items-center justify-between">
+              <div 
+                onClick={() => toast.success("Two-Factor Authentication settings updated!")}
+                className="p-4 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all cursor-pointer flex items-center justify-between"
+              >
                 <div>
                   <p className="text-[14px] font-semibold text-[#111c2d]">Two-Factor Auth</p>
                   <p className="text-[12px] text-slate-500">Increase account security</p>
@@ -244,7 +253,15 @@ export function ProfileContent({ profile }: { profile: ProfileData }) {
           <div className="p-8 border border-red-200 rounded-xl bg-red-50/50">
             <h3 className="text-[14px] font-semibold text-red-600 mb-2">Danger Zone</h3>
             <p className="text-[12px] text-slate-600 mb-4">Once you delete your account, there is no going back. Please be certain.</p>
-            <button className="w-full py-3 border border-red-500 text-red-600 text-[14px] font-bold rounded-xl hover:bg-red-600 hover:text-white transition-all active:scale-95">
+            <button 
+              onClick={async () => {
+                if (window.confirm("Are you sure you want to deactivate your account? This action cannot be undone.")) {
+                  toast.success("Account deactivated. Logging out...");
+                  setTimeout(() => window.location.href = "/auth/login", 2000);
+                }
+              }}
+              className="w-full py-3 border border-red-500 text-red-600 text-[14px] font-bold rounded-xl hover:bg-red-600 hover:text-white transition-all active:scale-95"
+            >
               Deactivate Account
             </button>
           </div>

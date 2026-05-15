@@ -9,7 +9,9 @@ import {
   MdArrowForward,
   MdGpsFixed,
   MdInfo,
+  MdSchedule
 } from "react-icons/md";
+import { GiPathDistance } from "react-icons/gi";
 import { FaMotorcycle } from "react-icons/fa6";
 import { useMapsLibrary, useMap } from "@vis.gl/react-google-maps";
 import BookRide from "@/components/ui/google/js-google";
@@ -298,11 +300,11 @@ export default function BookPage() {
             {distance && duration && (
               <div className="p-4 bg-blue-50 rounded-xl flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-blue-600 text-[20px]">distance</span>
+                  <span className="material-symbols-outlined text-blue-600 text-[20px]"><GiPathDistance /></span>
                   <span className="text-[14px] font-bold text-blue-700">{distance.toFixed(1)} km</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-400">
-                  <span className="material-symbols-outlined text-[20px]">schedule</span>
+                  <span className="material-symbols-outlined text-[20px]"><MdSchedule /></span>
                   <span className="text-[14px] font-bold">~{Math.round(duration)} mins</span>
                 </div>
               </div>
